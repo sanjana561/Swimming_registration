@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Swimming Registration</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0a1628;
+  --blue:#1a6ef5;
+  --blue-dim:#e8f0fe;
+  --teal:#0d9e6e;
+  --teal-dim:#e6f7f2;
+  --amber:#f59e0b;
+  --amber-dim:#fef3c7;
+  --red:#ef4444;
+  --red-dim:#fee2e2;
+  --surface:#fff;
+  --bg:#eef2fb;
+  --border:#e2e8f0;
+  --border2:#cbd5e1;
+  --text:#0f172a;
+  --muted:#64748b;
+  --light:#94a3b8;
+  --r:12px;--rs:8px;
+}
+body{font-family:'Outfit',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);padding:0 0 4rem}
+
+/* ── TOP HERO ── */
+.hero{background:var(--navy);padding:2rem 1.5rem 1.5rem;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 120%,rgba(26,110,245,.35) 0%,transparent 70%);pointer-events:none}
+.hero-icon{width:56px;height:56px;background:var(--blue);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:.75rem;position:relative;z-index:1}
+.hero h1{font-size:22px;font-weight:700;color:#fff;letter-spacing:-.4px;position:relative;z-index:1}
+.hero p{font-size:13px;color:rgba(255,255,255,.6);margin-top:4px;position:relative;z-index:1}
+
+/* ── STEPPER ── */
+.stepper{display:flex;align-items:center;padding:1.25rem 1.5rem;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;overflow-x:auto;gap:0}
+.step-item{display:flex;flex-direction:column;align-items:center;flex:1;min-width:60px;position:relative}
+.step-item:not(:last-child)::after{content:'';position:absolute;top:14px;left:calc(50% + 16px);right:calc(-50% + 16px);height:2px;background:var(--border);transition:background .4s}
+.step-item.done:not(:last-child)::after{background:var(--blue)}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--border);color:var(--light);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .3s;position:relative;z-index:1}
+.step-item.active .step-num{background:var(--blue);color:#fff;box-shadow:0 0 0 4px var(--blue-dim)}
+.step-item.done .step-num{background:var(--teal);color:#fff}
+.step-lbl{font-size:10px;font-weight:600;color:var(--light);margin-top:4px;text-align:center;white-space:nowrap}
+.step-item.active .step-lbl,.step-item.done .step-lbl{color:var(--blue)}
+.step-item.done .step-lbl{color:var(--teal)}
+
+/* ── WRAPPER ── */
+.wrap{max-width:560px;margin:0 auto;padding:1.5rem 1rem}
+
+/* ── CARD ── */
+.card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);padding:1.5rem;margin-bottom:1rem}
+.card-title{font-size:11px;font-weight:700;color:var(--light);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1.25rem;display:flex;align-items:center;gap:6px}
+.card-title span{display:inline-block;width:20px;height:20px;background:var(--blue-dim);color:var(--blue);border-radius:6px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+
+/* ── FIELDS ── */
+.field{margin-bottom:1rem}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:5px}
+.field input,.field select{width:100%;padding:10px 12px;font-size:14px;font-family:'Outfit',sans-serif;border:1.5px solid var(--border);border-radius:var(--rs);background:#fff;color:var(--text);transition:all .15s;appearance:none}
+.field input:focus,.field select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,110,245,.1)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.prefix-wrap{position:relative}
+.prefix-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-style:normal;font-size:14px;color:var(--muted);pointer-events:none}
+.prefix-wrap input{padding-left:24px}
+.err{font-size:12px;color:var(--red);margin-top:5px;display:none}
+.hint{font-size:12px;color:var(--light);margin-top:4px}
+
+/* ── COUNTER ── */
+.counter-row{display:flex;align-items:center;gap:14px;margin-top:6px}
+.cbtn{width:40px;height:40px;border-radius:var(--rs);border:1.5px solid var(--border2);background:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s;line-height:1;font-family:'JetBrains Mono',monospace}
+.cbtn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
+.cval{font-size:34px;font-weight:700;color:var(--text);min-width:40px;text-align:center;font-family:'JetBrains Mono',monospace}
+.clabel{font-size:13px;color:var(--muted)}
+
+/* ── FEE BOX ── */
+.fee-box{background:linear-gradient(135deg,#f0f7ff 0%,#e8f0fe 100%);border:1px solid #c7d9fa;border-radius:var(--rs);padding:1rem 1.25rem;margin-top:1rem}
+.fee-line{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding:3px 0}
+.fee-total{display:flex;justify-content:space-between;font-size:20px;font-weight:700;color:var(--navy);padding-top:10px;margin-top:6px;border-top:1px solid #c7d9fa}
+
+/* ── PAYMENT SECTION ── */
+.pay-hero{background:var(--navy);border-radius:var(--r);padding:1.5rem;text-align:center;margin-bottom:1rem;position:relative;overflow:hidden}
+.pay-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(26,110,245,.4) 0%,transparent 65%);pointer-events:none}
+.pay-amount{font-size:42px;font-weight:700;color:#fff;font-family:'JetBrains Mono',monospace;letter-spacing:-1px;position:relative;z-index:1}
+.pay-label{font-size:13px;color:rgba(255,255,255,.55);margin-top:4px;position:relative;z-index:1}
+
+.qr-wrap{background:#fff;border-radius:var(--r);padding:1.25rem;text-align:center;border:1px solid var(--border);margin-bottom:1rem}
+.qr-inner{display:inline-block;padding:12px;background:#fff;border-radius:8px;border:1px solid var(--border)}
+#qr-canvas{display:block}
+.qr-upi{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:var(--blue);margin-top:10px}
+.qr-club{font-size:12px;color:var(--muted);margin-top:3px}
+.pay-steps{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--rs);padding:.875rem 1rem;margin-bottom:1rem}
+.pay-steps p{font-size:13px;color:#92400e;font-weight:500;margin-bottom:6px}
+.pay-steps ol{padding-left:1.1rem}
+.pay-steps li{font-size:12px;color:#78350f;padding:2px 0;line-height:1.5}
+.breakdown{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--border)}
+.breakdown.tot{font-size:15px;font-weight:700;color:var(--text);border-bottom:none;padding-top:8px}
+
+/* ── VERIFIED BADGE ── */
+.v-badge{display:inline-flex;align-items:center;gap:6px;background:var(--teal-dim);color:var(--teal);font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;margin-bottom:1.25rem}
+
+/* ── SECTION LOCK ── */
+.section-locked{background:var(--red-dim);border:1px dashed var(--red);border-radius:var(--rs);padding:.875rem 1rem;display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.section-locked svg{flex-shrink:0}
+.section-locked p{font-size:13px;color:var(--red);font-weight:500}
+
+/* ── CHILD TABS ── */
+.child-tabs{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap}
+.child-tab{width:34px;height:34px;border-radius:50%;border:2px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--light);cursor:pointer;transition:all .2s}
+.child-tab.done{background:var(--teal-dim);color:var(--teal);border-color:var(--teal)}
+.child-tab.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
+
+/* ── EVENTS GRID ── */
+.events-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.ev-opt input[type=checkbox]{display:none}
+.ev-opt label{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);background:#fff;transition:all .15s;user-select:none}
+.ev-opt label:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
+.ev-opt input:checked+label{border-color:var(--blue);background:var(--blue-dim);color:var(--blue)}
+.ev-check{width:17px;height:17px;border-radius:5px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.ev-opt input:checked+label .ev-check{background:var(--blue);border-color:var(--blue)}
+.ev-opt input:checked+label .ev-check::after{content:'';width:9px;height:6px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translateY(-1px);display:block}
+.ev-limit{font-size:12px;color:var(--light);margin-top:6px}
+
+/* ── BUTTONS ── */
+.btn{width:100%;padding:13px;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn+.btn{margin-top:8px}
+.btn-blue{background:var(--blue);color:#fff;margin-top:1.25rem}
+.btn-blue:hover{background:#1560d8;transform:translateY(-1px)}
+.btn-blue:active{transform:none}
+.btn-blue:disabled{background:#94a3b8;cursor:not-allowed;transform:none}
+.btn-teal{background:var(--teal);color:#fff;margin-top:.5rem}
+.btn-teal:hover{background:#0a8a5f}
+.btn-ghost{background:transparent;border:1.5px solid var(--border2);color:var(--muted);font-size:13px;padding:10px;margin-top:.5rem}
+.btn-ghost:hover{background:var(--bg)}
+.btn-back{background:none;border:none;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:4px;padding:0;margin-bottom:.875rem;font-family:'Outfit',sans-serif}
+.btn-back:hover{color:var(--text)}
+
+/* ── SUCCESS ── */
+.success-icon{width:64px;height:64px;border-radius:50%;background:var(--teal-dim);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+.reg-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:.5rem}
+.reg-table th{background:var(--bg);padding:7px 10px;text-align:left;font-weight:700;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
+.reg-table td{padding:8px 10px;border-bottom:1px solid #f1f5f9;color:var(--text);vertical-align:top}
+.reg-table tr:last-child td{border-bottom:none}
+.ev-pill{display:inline-block;background:var(--blue-dim);color:var(--blue);font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin:1px}
+.kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
+.kv:last-child{border-bottom:none}
+.kv span:first-child{color:var(--muted)}
+.kv span:last-child{font-weight:600;color:var(--text)}
+
+/* ── SPINNER ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(255,255,255,.9);z-index:999;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.overlay.show{display:flex}
+.spin{width:40px;height:40px;border:3px solid var(--blue-dim);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-txt{font-size:14px;font-weight:600;color:var(--muted)}
+
+/* ── EVENT DETAIL CARD ── */
+.event-section-card{background:linear-gradient(135deg,#f8faff 0%,#eef2fb 100%);border:1px solid #c7d9fa;border-radius:var(--r);padding:1.25rem;margin-top:1rem}
+.event-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:.75rem}
+.event-detail-item{background:#fff;border:1px solid var(--border);border-radius:var(--rs);padding:.875rem;display:flex;flex-direction:column;gap:4px}
+.ev-name{font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.05em}
+.ev-field label{font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px;margin-top:6px}
+.ev-field select,.ev-field input{width:100%;padding:6px 8px;font-size:12px;font-family:'Outfit',sans-serif;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--text);appearance:none}
+
+@media(max-width:480px){.row2{grid-template-columns:1fr}.events-grid{grid-template-columns:1fr}.event-detail-grid{grid-template-columns:1fr}.wrap{padding:1rem .75rem}}
+</style>
+</head>
+<body>
+
+<!-- ⚙️ CONFIG -->
+<script>
+const CFG = {
+  clubName:    "Jai hind Swimming Club",
+  upiId:       "raosanjanar-1@oksbi",
+  feePerChild: 500,
+  scriptUrl:   "https://script.google.com/macros/s/AKfycbyPCoTutYsGM-y7W-wv0CAh8p_hS8oNWjSK4UvmZwPDPPqr4Kh6h029BJJRAM45UaEBbg/exec",
+};
+</script>
+
+<div class="overlay" id="overlay">
+  <div class="spin"></div>
+  <p class="spin-txt" id="spin-txt">Saving registrations...</p>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-icon">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 12c2-3 4-4.5 6-4.5s4 2 6 2 4-2 6-2"/><path d="M2 17c2-3 4-4.5 6-4.5s4 2 6 2 4-2 6-2"/>
+      <circle cx="12" cy="5" r="2" fill="#fff" stroke="none"/>
+    </svg>
+  </div>
+  <h1 id="hero-club"></h1>
+  <p>Swimming Event Registration</p>
+</div>
+
+<!-- STEPPER -->
+<div class="stepper" id="stepper">
+  <div class="step-item active" id="si1"><div class="step-num">1</div><div class="step-lbl">Setup</div></div>
+  <div class="step-item" id="si2"><div class="step-num">2</div><div class="step-lbl">Payment</div></div>
+  <div class="step-item" id="si3"><div class="step-num">3</div><div class="step-lbl">Children</div></div>
+  <div class="step-item" id="si4"><div class="step-num">4</div><div class="step-lbl">Events</div></div>
+  <div class="step-item" id="si5"><div class="step-num">✓</div><div class="step-lbl">Done</div></div>
+</div>
+
+<div class="wrap">
+
+<!-- ════════════════════════════════
+     SECTION 1 — SETUP
+════════════════════════════════ -->
+<div id="sec1">
+  <div class="card">
+    <div class="card-title"><span>1</span>Registration Setup</div>
+
+    <div class="field">
+      <label>Fee per child (₹)</label>
+      <div class="prefix-wrap"><i>₹</i>
+        <input type="number" id="fee-input" value="500" min="1" oninput="calcFee()"/>
+      </div>
+      <p class="err" id="fee-err">Enter a valid fee.</p>
+    </div>
+
+    <div class="field">
+      <label>Number of children participating</label>
+      <div class="counter-row">
+        <button class="cbtn" onclick="chg(-1)">−</button>
+        <span class="cval" id="cval">1</span>
+        <button class="cbtn" onclick="chg(1)">+</button>
+        <span class="clabel" id="clabel">child</span>
+      </div>
+    </div>
+
+    <div class="fee-box">
+      <div class="fee-line"><span>Fee per child</span><span id="fb-per">₹500</span></div>
+      <div class="fee-line"><span>Children</span><span id="fb-cnt">× 1</span></div>
+      <div class="fee-total"><span>Total</span><span id="fb-tot">₹500</span></div>
+    </div>
+
+    <button class="btn btn-blue" onclick="toSec2()">Continue to payment →</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SECTION 2 — PAYMENT
+════════════════════════════════ -->
+<div id="sec2" style="display:none">
+  <button class="btn-back" onclick="toSec1()">← Back</button>
+
+  <div class="pay-hero">
+    <div class="pay-amount" id="pay-amt">₹500</div>
+    <div class="pay-label" id="pay-sub">1 child · ₹500 each</div>
+  </div>
+
+  <div class="qr-wrap">
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;font-weight:600;">SCAN TO PAY</p>
+    <div class="qr-inner"><div id="qr-canvas"></div></div>
+    <div class="qr-upi" id="qr-upi-txt"></div>
+    <div class="qr-club" id="qr-club-txt"></div>
+  </div>
+
+  <div class="pay-steps">
+    <p>How to pay:</p>
+    <ol>
+      <li>Open PhonePe / GPay / Paytm / any UPI app</li>
+      <li>Scan the QR code above <strong>OR</strong> send to UPI ID shown</li>
+      <li>Enter the exact amount shown</li>
+      <li>Complete payment and note the <strong>UTR / Transaction ID</strong></li>
+      <li>Enter it below and click Continue</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>₹</span>Payment Breakdown</div>
+    <div class="breakdown"><span>Fee per child</span><span id="bd-per">₹500</span></div>
+    <div class="breakdown"><span>Number of children</span><span id="bd-cnt">1</span></div>
+    <div class="breakdown tot"><span>Total payable</span><span id="bd-tot">₹500</span></div>
+
+    <div class="field" style="margin-top:1.25rem">
+      <label>UTR / Transaction ID</label>
+      <input type="text" id="utr-inp" placeholder="Enter UTR after payment" maxlength="24"/>
+      <p class="hint">Found in your UPI app after payment is complete</p>
+      <p class="err" id="utr-err">Please enter your UTR / transaction ID.</p>
+    </div>
+
+    <button class="btn btn-blue" onclick="toSec3()">Payment verified — fill child details →</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SECTION 3 — CHILD DETAILS
+════════════════════════════════ -->
+<div id="sec3" style="display:none">
+  <button class="btn-back" id="s3back" onclick="s3Back()">← Back</button>
+
+  <div class="v-badge">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    Payment verified · ₹<span id="v-amt"></span>
+  </div>
+
+  <!-- child tab pills -->
+  <div class="child-tabs" id="child-tabs"></div>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:1rem;" id="child-lbl"></p>
+
+  <div class="card">
+    <div class="card-title"><span id="cn-badge">1</span>Child Details</div>
+    <div class="row2">
+      <div class="field"><label>First name</label><input type="text" id="c-fn" placeholder="Arjun"/></div>
+      <div class="field"><label>Last name</label><input type="text" id="c-ln" placeholder="Sharma"/></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Date of birth</label><input type="date" id="c-dob"/></div>
+      <div class="field"><label>Age group</label>
+        <select id="c-age"><option value="">Select</option><option>Under 8</option><option>8 – 10</option><option>11 – 13</option><option>14 – 16</option><option>17 – 18</option></select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Gender</label>
+        <select id="c-gen"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select>
+      </div>
+      <div class="field"><label>Swim level</label>
+        <select id="c-lvl"><option value="">Select</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select>
+      </div>
+    </div>
+
+    <div class="card-title" style="margin-top:1.25rem"><span>🏊</span>Select Events (up to 3)</div>
+    <div class="events-grid">
+      <div class="ev-opt"><input type="checkbox" id="ev1" value="Freestyle"><label for="ev1"><div class="ev-check"></div>Freestyle</label></div>
+      <div class="ev-opt"><input type="checkbox" id="ev2" value="Backstroke"><label for="ev2"><div class="ev-check"></div>Backstroke</label></div>
+      <div class="ev-opt"><input type="checkbox" id="ev3" value="Breaststroke"><label for="ev3"><div class="ev-check"></div>Breaststroke</label></div>
+      <div class="ev-opt"><input type="checkbox" id="ev4" value="Butterfly"><label for="ev4"><div class="ev-check"></div>Butterfly</label></div>
+      <div class="ev-opt"><input type="checkbox" id="ev5" value="Relay"><label for="ev5"><div class="ev-check"></div>Relay</label></div>
+    </div>
+    <p class="ev-limit">Selected: <span id="ev-cnt">0</span> / 3</p>
+    <p class="err" id="ev-err">Please select at least 1 event.</p>
+
+    <button class="btn btn-blue" id="child-btn" onclick="saveChild()">Save & next →</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SECTION 4 — EVENT DETAILS
+════════════════════════════════ -->
+<div id="sec4" style="display:none">
+  <button class="btn-back" onclick="toSec3last()">← Back</button>
+
+  <div class="v-badge">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    All children added
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>4</span>Event Details</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:1rem;">Fill in the distance and heat details for each child's events.</p>
+    <div id="event-details-container"></div>
+    <button class="btn btn-blue" onclick="submitAll()">Submit all registrations →</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SECTION 5 — SUCCESS
+════════════════════════════════ -->
+<div id="sec5" style="display:none">
+  <div class="card" style="text-align:center">
+    <div class="success-icon">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0d9e6e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:6px">All done!</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem" id="done-sub"></p>
+
+    <div style="text-align:left">
+      <div class="card-title"><span>📋</span>Registered Children</div>
+      <div style="overflow-x:auto">
+        <table class="reg-table"><thead><tr><th>#</th><th>Name</th><th>Age</th><th>Level</th><th>Events</th></tr></thead>
+        <tbody id="reg-tbody"></tbody></table>
+      </div>
+      <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #f1f5f9">
+        <div class="kv"><span>Total children</span><span id="dn-cnt"></span></div>
+        <div class="kv"><span>Total fee paid</span><span id="dn-fee" style="color:var(--teal)"></span></div>
+        <div class="kv"><span>UTR / Transaction ID</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px" id="dn-utr"></span></div>
+        <div class="kv"><span>Saved to Google Sheets</span><span id="dn-saved"></span></div>
+      </div>
+    </div>
+
+    <button class="btn btn-teal" onclick="dlExcel()" style="margin-top:1.25rem">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Excel
+    </button>
+    <button class="btn btn-ghost" onclick="resetAll()">Register new group</button>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── init ────────────────────────────────────────────────
+document.getElementById('hero-club').textContent = CFG.clubName;
+
+let numC = 1, feePC = 500, curC = 0;
+let regs = [], utrVal = '';
+
+const cbs = ()=>document.querySelectorAll('.ev-opt input[type=checkbox]');
+document.addEventListener('change', e=>{
+  if(e.target.closest('.ev-opt')){
+    const all = [...cbs()].filter(c=>c.checked);
+    if(all.length>3){e.target.checked=false;return;}
+    document.getElementById('ev-cnt').textContent=[...cbs()].filter(c=>c.checked).length;
+  }
+});
+
+function fmt(n){return '₹'+Number(n).toLocaleString('en-IN')}
+
+function chg(d){
+  numC=Math.max(1,Math.min(20,numC+d));
+  document.getElementById('cval').textContent=numC;
+  document.getElementById('clabel').textContent=numC===1?'child':'children';
+  calcFee();
+}
+
+function calcFee(){
+  feePC=parseFloat(document.getElementById('fee-input').value)||0;
+  document.getElementById('fb-per').textContent=fmt(feePC);
+  document.getElementById('fb-cnt').textContent='× '+numC;
+  document.getElementById('fb-tot').textContent=fmt(feePC*numC);
+}
+
+// ── QR CODE ─────────────────────────────────────────────
+let qrGenerated=false;
+function generateQR(amount){
+  if(qrGenerated)return;
+  const upiUrl=`upi://pay?pa=${CFG.upiId}&pn=${encodeURIComponent(CFG.clubName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('Swimming Registration')}`;
+  document.getElementById('qr-canvas').innerHTML='';
+  new QRCode(document.getElementById('qr-canvas'),{text:upiUrl,width:160,height:160,colorDark:'#0a1628',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+  document.getElementById('qr-upi-txt').textContent=CFG.upiId;
+  document.getElementById('qr-club-txt').textContent=CFG.clubName;
+  qrGenerated=true;
+}
+
+// ── NAVIGATION ──────────────────────────────────────────
+function show(id){['sec1','sec2','sec3','sec4','sec5'].forEach(s=>document.getElementById(s).style.display='none');document.getElementById(id).style.display='block';window.scrollTo(0,0)}
+
+function setStepper(n){
+  for(let i=1;i<=5;i++){
+    const el=document.getElementById('si'+i);
+    el.classList.remove('active','done');
+    if(i<n)el.classList.add('done');
+    else if(i===n)el.classList.add('active');
+  }
+}
+
+function toSec1(){show('sec1');setStepper(1)}
+
+function toSec2(){
+  feePC=parseFloat(document.getElementById('fee-input').value);
+  if(!feePC||feePC<1){document.getElementById('fee-err').style.display='block';return;}
+  document.getElementById('fee-err').style.display='none';
+  const tot=feePC*numC;
+  document.getElementById('pay-amt').textContent=fmt(tot);
+  document.getElementById('pay-sub').textContent=numC+' child'+(numC>1?'ren':'')+' · '+fmt(feePC)+' each';
+  document.getElementById('bd-per').textContent=fmt(feePC);
+  document.getElementById('bd-cnt').textContent=numC;
+  document.getElementById('bd-tot').textContent=fmt(tot);
+  generateQR(tot);
+  show('sec2');setStepper(2);
+}
+
+function toSec3(){
+  utrVal=document.getElementById('utr-inp').value.trim();
+  if(!utrVal||utrVal.length<6){document.getElementById('utr-err').style.display='block';return;}
+  document.getElementById('utr-err').style.display='none';
+  document.getElementById('v-amt').textContent=(feePC*numC).toLocaleString('en-IN');
+  regs=[];curC=0;
+  buildTabs();loadChild(0);
+  show('sec3');setStepper(3);
+}
+
+function toSec3last(){curC=numC-1;loadChild(curC);show('sec3');setStepper(3)}
+
+function s3Back(){
+  if(curC===0){show('sec2');setStepper(2);}
+  else{curC--;loadChild(curC);}
+}
+
+// ── CHILD TABS ──────────────────────────────────────────
+function buildTabs(){
+  const wrap=document.getElementById('child-tabs');
+  wrap.innerHTML='';
+  for(let i=0;i<numC;i++){
+    const d=document.createElement('div');
+    d.className='child-tab'+(i===0?' active':'');
+    d.id='ctab'+i;d.textContent=i+1;
+    d.onclick=(()=>{const idx=i;return()=>{if(regs[idx]){curC=idx;loadChild(idx);}}})();
+    wrap.appendChild(d);
+  }
+}
+
+function updateTabs(idx){
+  for(let i=0;i<numC;i++){
+    const t=document.getElementById('ctab'+i);
+    if(!t)continue;
+    t.className='child-tab'+(i<idx?' done':i===idx?' active':'');
+  }
+}
+
+function loadChild(idx){
+  document.getElementById('child-lbl').textContent='Child '+( idx+1)+' of '+numC;
+  document.getElementById('cn-badge').textContent=idx+1;
+  document.getElementById('child-btn').textContent=idx<numC-1?'Save & next child →':'Next — add event details →';
+  ['c-fn','c-ln','c-dob'].forEach(id=>document.getElementById(id).value='');
+  ['c-age','c-gen','c-lvl'].forEach(id=>document.getElementById(id).value='');
+  cbs().forEach(c=>c.checked=false);
+  document.getElementById('ev-cnt').textContent='0';
+  document.getElementById('ev-err').style.display='none';
+  if(regs[idx]){
+    const r=regs[idx];
+    document.getElementById('c-fn').value=r.fn;
+    document.getElementById('c-ln').value=r.ln;
+    document.getElementById('c-dob').value=r.dob;
+    document.getElementById('c-age').value=r.age;
+    document.getElementById('c-gen').value=r.gender;
+    document.getElementById('c-lvl').value=r.level;
+    r.events.forEach(ev=>cbs().forEach(cb=>{if(cb.value===ev)cb.checked=true;}));
+    document.getElementById('ev-cnt').textContent=r.events.length;
+  }
+  updateTabs(idx);
+}
+
+function saveChild(){
+  const fn=document.getElementById('c-fn').value.trim();
+  const ln=document.getElementById('c-ln').value.trim();
+  const dob=document.getElementById('c-dob').value;
+  const age=document.getElementById('c-age').value;
+  const gender=document.getElementById('c-gen').value;
+  const level=document.getElementById('c-lvl').value;
+  const events=[...cbs()].filter(c=>c.checked).map(c=>c.value);
+  document.getElementById('ev-err').style.display='none';
+  if(!fn||!ln||!dob||!age||!gender||!level){alert('Please fill in all fields.');return;}
+  if(events.length<1){document.getElementById('ev-err').style.display='block';return;}
+  regs[curC]={fn,ln,dob,age,gender,level,events};
+  updateTabs(curC);
+  if(curC<numC-1){curC++;loadChild(curC);}
+  else{buildEventDetails();show('sec4');setStepper(4);}
+}
+
+// ── EVENT DETAILS (Section 4) ───────────────────────────
+function buildEventDetails(){
+  const con=document.getElementById('event-details-container');
+  con.innerHTML='';
+  regs.forEach((r,ci)=>{
+    const wrap=document.createElement('div');
+    wrap.style.cssText='margin-bottom:1.25rem;';
+    wrap.innerHTML=`<div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:.5rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)">
+      Child ${ci+1} — ${r.fn} ${r.ln}</div>`;
+    r.events.forEach((ev,ei)=>{
+      const ediv=document.createElement('div');
+      ediv.style.cssText='background:#f8faff;border:1px solid var(--border);border-radius:8px;padding:.875rem;margin-bottom:.5rem;';
+      ediv.innerHTML=`
+        <div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">${ev}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="ev-field">
+            <label>Distance</label>
+            <select id="ev_${ci}_${ei}_dist">
+              <option value="">Select</option>
+              <option>25m</option><option>50m</option><option>100m</option>
+              <option>200m</option><option>400m</option>
+            </select>
+          </div>
+          <div class="ev-field">
+            <label>Heat / Lane</label>
+            <input type="text" id="ev_${ci}_${ei}_heat" placeholder="e.g. Heat 2, Lane 3"/>
+          </div>
+        </div>`;
+      wrap.appendChild(ediv);
+    });
+    con.appendChild(wrap);
+  });
+}
+
+// ── SUBMIT ──────────────────────────────────────────────
+async function submitAll(){
+  // collect event details into regs
+  regs.forEach((r,ci)=>{
+    r.eventDetails=r.events.map((ev,ei)=>({
+      event:ev,
+      distance:document.getElementById(`ev_${ci}_${ei}_dist`)?.value||'',
+      heat:document.getElementById(`ev_${ci}_${ei}_heat`)?.value||''
+    }));
+  });
+
+  const overlay=document.getElementById('overlay');
+  const stxt=document.getElementById('spin-txt');
+  overlay.classList.add('show');
+  stxt.textContent='Saving registrations...';
+
+  const payload={utr:utrVal,feePerChild:feePC,totalFee:feePC*numC,numChildren:numC,
+    registrationDate:new Date().toLocaleDateString('en-IN'),
+    registrationTime:new Date().toLocaleTimeString('en-IN'),children:regs};
+
+  let saved=false;
+  if(CFG.scriptUrl !== 'https://script.google.com/macros/s/AKfycbx5j7TT2iCoiCp0I2KAer8wsC_YP3jJ9CP1O5ms1U0x7R49Ig7malYfi4FtAeA8g4Cq/exec'){
+    try{
+      const response = await fetch(CFG.scriptUrl, {
+        method: 'POST',
+        mode: 'cors',
+        body: JSON.stringify(payload)
+      });
+      if(response.ok){
+        saved = true;
+        console.log('Data saved successfully');
+      } else {
+        console.error('Failed to save:', response.status, response.statusText);
+        alert('Failed to save to Google Sheets. Check console for details.');
+      }
+    } catch(err){
+      console.error('Error saving to Google Sheets:', err);
+      alert('Error saving to Google Sheets: ' + err.message);
+    }
+  }
+
+  stxt.textContent='Wrapping up...';
+  await new Promise(r=>setTimeout(r,500));
+  overlay.classList.remove('show');
+  buildSuccess(saved);
+  show('sec5');setStepper(5);
+}
+
+
+function buildSuccess(saved){
+  const tbody=document.getElementById('reg-tbody');
+  tbody.innerHTML='';
+  regs.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${i+1}</td><td>${r.fn} ${r.ln}</td><td>${r.age}</td><td>${r.level}</td>
+      <td>${r.events.map(e=>`<span class="ev-pill">${e}</span>`).join('')}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('done-sub').textContent=regs.length+' child'+(regs.length>1?'ren':'')+' registered successfully.';
+  document.getElementById('dn-cnt').textContent=regs.length;
+  document.getElementById('dn-fee').textContent=fmt(feePC*numC);
+  document.getElementById('dn-utr').textContent=utrVal;
+  document.getElementById('dn-saved').textContent=saved?'✓ Yes':'— Not configured';
+  document.getElementById('dn-saved').style.color=saved?'var(--teal)':'var(--light)';
+}
+
+function dlExcel(){
+  const wb=XLSX.utils.book_new();
+  const hdrs=['#','First Name','Last Name','DOB','Age Group','Gender','Swim Level',
+    'Event 1','Event 2','Event 3','Distance 1','Distance 2','Distance 3',
+    'Heat/Lane 1','Heat/Lane 2','Heat/Lane 3','Fee (₹)','UTR','Date','Time'];
+  const rows=regs.map((r,i)=>[
+    i+1,r.fn,r.ln,r.dob,r.age,r.gender,r.level,
+    r.events[0]||'',r.events[1]||'',r.events[2]||'',
+    r.eventDetails?.[0]?.distance||'',r.eventDetails?.[1]?.distance||'',r.eventDetails?.[2]?.distance||'',
+    r.eventDetails?.[0]?.heat||'',r.eventDetails?.[1]?.heat||'',r.eventDetails?.[2]?.heat||'',
+    feePC,utrVal,new Date().toLocaleDateString('en-IN'),new Date().toLocaleTimeString('en-IN')
+  ]);
+  const ws=XLSX.utils.aoa_to_sheet([hdrs,...rows]);
+  ws['!cols']=[4,14,14,12,11,9,12,12,12,12,10,10,10,14,14,14,10,20,12,12].map(w=>({wch:w}));
+  const sum=[['Swimming Registration Summary'],[],
+    ['Club',CFG.clubName],['Total Children',regs.length],
+    ['Fee Per Child',feePC],['Total Fee',feePC*regs.length],
+    ['UTR',utrVal],['Date',new Date().toLocaleDateString('en-IN')]];
+  const ws2=XLSX.utils.aoa_to_sheet(sum);
+  ws2['!cols']=[{wch:22},{wch:24}];
+  XLSX.utils.book_append_sheet(wb,ws,'Registrations');
+  XLSX.utils.book_append_sheet(wb,ws2,'Summary');
+  XLSX.writeFile(wb,'swimming_reg_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+function resetAll(){
+  numC=1;feePC=500;curC=0;regs=[];utrVal='';qrGenerated=false;
+  document.getElementById('fee-input').value='500';
+  document.getElementById('cval').textContent='1';
+  document.getElementById('utr-inp').value='';
+  document.getElementById('qr-canvas').innerHTML='';
+  calcFee();show('sec1');setStepper(1);
+}
+
+calcFee();
+</script>
+</body>
+</html>
