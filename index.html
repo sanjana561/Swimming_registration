@@ -174,10 +174,10 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);min-height:100vh;color
 <!-- ⚙️ CONFIG -->
 <script>
 const CFG = {
-  clubName:    "Mangaluru Swimming Club",
-  upiId:       "swimclub@upi",
+  clubName:    "Jai hind Swimming Club",
+  upiId:       "raosanjanar-1@oksbi",
   feePerChild: 500,
-  scriptUrl:   "YOUR_APPS_SCRIPT_URL_HERE",
+  scriptUrl:   "https://script.google.com/macros/s/AKfycbyPCoTutYsGM-y7W-wv0CAh8p_hS8oNWjSK4UvmZwPDPPqr4Kh6h029BJJRAM45UaEBbg/exec",
 };
 </script>
 
@@ -600,12 +600,24 @@ async function submitAll(){
     registrationTime:new Date().toLocaleTimeString('en-IN'),children:regs};
 
   let saved=false;
-  if(CFG.scriptUrl!=='YOUR_APPS_SCRIPT_URL_HERE'){
+  if(CFG.scriptUrl !== 'https://script.google.com/macros/s/AKfycbx5j7TT2iCoiCp0I2KAer8wsC_YP3jJ9CP1O5ms1U0x7R49Ig7malYfi4FtAeA8g4Cq/exec'){
     try{
-      await fetch(CFG.scriptUrl,{method:'POST',mode:'no-cors',
-        headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      saved=true;
-    }catch(err){console.error(err);}
+      const response = await fetch(CFG.scriptUrl, {
+        method: 'POST',
+        mode: 'cors',
+        body: JSON.stringify(payload)
+      });
+      if(response.ok){
+        saved = true;
+        console.log('Data saved successfully');
+      } else {
+        console.error('Failed to save:', response.status, response.statusText);
+        alert('Failed to save to Google Sheets. Check console for details.');
+      }
+    } catch(err){
+      console.error('Error saving to Google Sheets:', err);
+      alert('Error saving to Google Sheets: ' + err.message);
+    }
   }
 
   stxt.textContent='Wrapping up...';
@@ -614,6 +626,7 @@ async function submitAll(){
   buildSuccess(saved);
   show('sec5');setStepper(5);
 }
+
 
 function buildSuccess(saved){
   const tbody=document.getElementById('reg-tbody');
