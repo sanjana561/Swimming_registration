@@ -628,9 +628,16 @@ function toSec3(){
   }
 
   // populate setup section
-  document.getElementById('fee-input').value = CFG.feePerChild;
-  document.getElementById('child-count-display').textContent = numC + ' child' + (numC > 1 ? 'ren' : '') + ' registered';
-  calcFee();
+ document.getElementById('fee-input').value = CFG.feePerChild;
+
+// force update fee variable
+feePC = CFG.feePerChild;  
+
+document.getElementById('child-count-display').textContent =
+  numC + ' child' + (numC > 1 ? 'ren' : '') + ' registered';
+
+// force UI refresh
+calcFee();
   show('sec3'); setStepper(3);
 }
 
