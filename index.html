@@ -518,7 +518,12 @@ let numC = 0, feePC = CFG.feePerChild, curC = 0;
 let regs = [], utrVal = '';
 let qrGenerated = false;
 
-function fmt(n){ return '₹' + Number(n).toLocaleString('en-IN'); }
+function fmt(n){ 
+  return '₹' + Number(n).toLocaleString('en-IN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }); 
+}
 
 function show(id){
   ['sec1','sec2','sec3','sec4','sec5'].forEach(s => document.getElementById(s).style.display = 'none');
