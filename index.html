@@ -256,8 +256,11 @@ const CATEGORY_EVENTS = {
 // ── PAYMENT FUNCTIONS ──
 function openGooglePay(){
   const tot = parseFloat(document.getElementById('fee-input').value) * numC;
+
   const upiUrl = `upi://pay?pa=${CFG.upiId}&pn=${encodeURIComponent(CFG.clubName)}&am=${tot}&cu=INR&tn=${encodeURIComponent('Swimming Registration')}`;
- window.open(upiUrl, "_self");
+
+  // Try opening via new window (better support)
+  window.open(upiUrl, '_self');
 }
 
 function openUPIApp(){
