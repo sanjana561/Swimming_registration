@@ -54,12 +54,12 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);min-height:100vh;color
 .child-tab.done{background:var(--teal-dim);color:var(--teal);border-color:var(--teal)}
 .child-tab.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
 
-/* ── EVENT SELECTION ── */
+/* ── EVENT + DISTANCE SELECTION ── */
 .events-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .ev-opt input[type=checkbox]{display:none}
 .ev-opt label{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);background:#fff;transition:all .15s;user-select:none}
 .ev-opt label:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-dim)}
-.ev-opt input:checked+label{border-color:var(--blue);background:var(--blue-dim);color:var(--blue)}
+.ev-opt input:checked+label{border-color:var(--blue);background:var(--blue-dim);color:var(--blue);font-weight:600}
 .ev-check{width:17px;height:17px;border-radius:5px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .ev-opt input:checked+label .ev-check{background:var(--blue);border-color:var(--blue)}
 .ev-opt input:checked+label .ev-check::after{content:'';width:9px;height:6px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translateY(-1px);display:block}
@@ -72,13 +72,16 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);min-height:100vh;color
 .child-event-count.full{background:#dcfce7;color:#15803d}
 .child-event-count.over{background:var(--red-dim);color:var(--red)}
 
-/* ── EVENT DISTANCE BLOCK ── */
-.event-dist-block{background:#fff;border:1px solid var(--border);border-radius:var(--rs);padding:.875rem;margin-top:.75rem}
-.event-dist-title{font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem}
-.ev-field label{font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px;margin-top:6px}
-.ev-field select,.ev-field input{width:100%;padding:7px 10px;font-size:13px;font-family:'Outfit',sans-serif;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--text);appearance:none}
-.ev-field select:focus,.ev-field input:focus{outline:none;border-color:var(--blue)}
-.dist-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* ── HEAT BLOCK ── */
+.heat-block{background:#fff;border:1px solid var(--border);border-radius:var(--rs);padding:1rem;margin-top:.75rem}
+.heat-block-title{font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
+.heat-block-title::before{content:'✓';color:var(--teal);font-weight:700}
+.heat-field{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.heat-field label{font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:3px}
+.heat-field input{width:100%;padding:7px 10px;font-size:13px;font-family:'Outfit',sans-serif;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--text)}
+.heat-field input:focus{outline:none;border-color:var(--blue)}
+
+.category-info{background:#f0f7ff;border:1px solid #c7d9fa;border-radius:var(--rs);padding:10px 12px;margin-bottom:1rem;font-size:12px;color:var(--navy);font-weight:500}
 
 /* ── PAYMENT ── */
 .pay-hero{background:var(--navy);border-radius:var(--r);padding:1.5rem;text-align:center;margin-bottom:1rem;position:relative;overflow:hidden}
@@ -130,7 +133,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);min-height:100vh;color
 .spin{width:40px;height:40px;border:3px solid var(--blue-dim);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin-txt{font-size:14px;font-weight:600;color:var(--muted)}
-@media(max-width:480px){.row2{grid-template-columns:1fr}.events-grid{grid-template-columns:1fr}.dist-row{grid-template-columns:1fr}.wrap{padding:1rem .75rem}}
+@media(max-width:480px){.row2{grid-template-columns:1fr}.events-grid{grid-template-columns:1fr}.heat-field{grid-template-columns:1fr}.wrap{padding:1rem .75rem}}
 </style>
 </head>
 <body>
@@ -142,7 +145,120 @@ const CFG = {
   feePerChild: 1,
   scriptUrl:  "https://script.google.com/macros/s/AKfycbyPCoTutYsGM-y7W-wv0CAh8p_hS8oNWjSK4UvmZwPDPPqr4Kh6h029BJJRAM45UaEBbg/exec",
 };
-const EVENTS = ['Freestyle','Backstroke','Breaststroke','Butterfly','Relay'];
+
+// Category-specific events and distances based on age groups
+const CATEGORY_EVENTS = {
+  'I': {
+    name: 'Group I (Boys / Girls) Y.B 2011-2012',
+    events: ['Freestyle', 'Breast Stroke', 'Back Stroke', 'Butterfly'],
+    distances: {
+      'Freestyle': ['100', '50'],
+      'Breast Stroke': ['50'],
+      'Back Stroke': ['50'],
+      'Butterfly': ['50']
+    },
+    relays: ['4 X 50 Freestyle Relay']
+  },
+  'II': {
+    name: 'Group II (Boys / Girls) Y.B 2013',
+    events: ['Freestyle', 'Breast Stroke', 'Back Stroke', 'Butterfly'],
+    distances: {
+      'Freestyle': ['100', '50'],
+      'Breast Stroke': ['50'],
+      'Back Stroke': ['50'],
+      'Butterfly': ['50']
+    },
+    relays: ['4 X 50 Freestyle Relay', '4 X 50 Medley Relay']
+  },
+  'III': {
+    name: 'Group III (Boys / Girls) Y.B 2014',
+    events: ['Freestyle', 'Breast Stroke', 'Back Stroke', 'Butterfly'],
+    distances: {
+      'Freestyle': ['100', '50'],
+      'Breast Stroke': ['50'],
+      'Back Stroke': ['50'],
+      'Butterfly': ['50']
+    },
+    relays: ['4 X 50 Freestyle Relay', '4 X 50 Medley Relay']
+  },
+  'IV': {
+    name: 'Group IV (Boys / Girls) Y.B 2015',
+    events: ['Freestyle', 'Breast Stroke', 'Back Stroke', 'Butterfly'],
+    distances: {
+      'Freestyle': ['100', '50'],
+      'Breast Stroke': ['50'],
+      'Back Stroke': ['50'],
+      'Butterfly': ['50']
+    },
+    relays: []
+  },
+  'V': {
+    name: 'Group V (Boys / Girls) Y.B 2016',
+    events: ['Freestyle', 'Breast Stroke', 'Back Stroke', 'Butterfly'],
+    distances: {
+      'Freestyle': ['50', '25'],
+      'Breast Stroke': ['50'],
+      'Back Stroke': ['50'],
+      'Butterfly': ['50']
+    },
+    relays: ['4 X 25 Freestyle Relay']
+  },
+  'VI': {
+    name: 'Group VI (Boys / Girls) Y.B 2017',
+    events: ['Freestyle', 'Breast Stroke', 'Back Stroke', 'Butterfly'],
+    distances: {
+      'Freestyle': ['50', '25'],
+      'Breast Stroke': ['50'],
+      'Back Stroke': ['50'],
+      'Butterfly': ['50']
+    },
+    relays: ['4 X 25 Freestyle Relay', '4 X 25 Medley Relay']
+  },
+  'VII': {
+    name: 'Group VII (Boys/Girls) Y.B 2018',
+    events: ['Freestyle', 'Breast Stroke', 'Back Stroke', 'Board Kick'],
+    distances: {
+      'Freestyle': ['25'],
+      'Breast Stroke': ['25'],
+      'Back Stroke': ['25'],
+      'Board Kick': ['25']
+    },
+    relays: []
+  },
+  'VIII': {
+    name: 'Group VIII (Boys/Girls) Y.B 2019',
+    events: ['Freestyle', 'Breast Stroke', 'Back Stroke', 'Board Kick'],
+    distances: {
+      'Freestyle': ['25'],
+      'Breast Stroke': ['25'],
+      'Back Stroke': ['25'],
+      'Board Kick': ['25']
+    },
+    relays: ['4 X 25 Freestyle Relay']
+  },
+  'OPEN MEN': {
+    name: 'Group VIII (MEN/WOMEN) Y.B 2010 OR Before',
+    events: ['Freestyle', 'Breast Stroke', 'Back Stroke', 'Butterfly'],
+    distances: {
+      'Freestyle': ['100', '50'],
+      'Breast Stroke': ['50'],
+      'Back Stroke': ['50'],
+      'Butterfly': ['50']
+    },
+    relays: []
+  },
+  'OPEN WOMEN': {
+    name: 'Group VIII (MEN/WOMEN) Y.B 2010 OR Before',
+    events: ['Freestyle', 'Breast Stroke', 'Back Stroke', 'Butterfly'],
+    distances: {
+      'Freestyle': ['100', '50'],
+      'Breast Stroke': ['50'],
+      'Back Stroke': ['50'],
+      'Butterfly': ['50']
+    },
+    relays: []
+  }
+};
 </script>
 
 <div class="overlay" id="overlay">
@@ -187,18 +303,24 @@ const EVENTS = ['Freestyle','Backstroke','Breaststroke','Butterfly','Relay'];
   <div class="card">
     <div class="card-title"><span class="badge" id="cn-badge">1</span>Child Details</div>
     <div class="row2">
-      <div class="field"><label>First name (Block Letters)</label><input type="text" id="c-fn" placeholder="ARJUN"/></div>
-      <div class="field"><label>Last name (Block Letters)</label><input type="text" id="c-ln" placeholder="SHARMA"/></div>
+      <div class="field"><label>First name (Block Letters)</label><input type="text" id="c-fn" /></div>
+      <div class="field"><label>Last name (Block Letters)</label><input type="text" id="c-ln"/></div>
     </div>
     <div class="row2">
       <div class="field"><label>Date of birth</label><input type="date" id="c-dob"/></div>
       <div class="field"><label>Age group / Category</label>
         <select id="c-age">
           <option value="">Select</option>
-          <option>I</option><option>II</option><option>III</option>
-          <option>IV</option><option>V</option><option>VI</option>
-          <option>VII</option><option>VIII</option>
-          <option>OPEN MEN</option><option>OPEN WOMEN</option>
+          <option value="I">Group I (Y.B 2011-2012)</option>
+          <option value="II">Group II (Y.B 2013)</option>
+          <option value="III">Group III (Y.B 2014)</option>
+          <option value="IV">Group IV (Y.B 2015)</option>
+          <option value="V">Group V (Y.B 2016)</option>
+          <option value="VI">Group VI (Y.B 2017)</option>
+          <option value="VII">Group VII (Y.B 2018)</option>
+          <option value="VIII">Group VIII (Y.B 2019)</option>
+          <option value="OPEN MEN">OPEN MEN (Y.B 2010 OR Before)</option>
+          <option value="OPEN WOMEN">OPEN WOMEN (Y.B 2010 OR Before)</option>
         </select>
       </div>
     </div>
@@ -246,7 +368,7 @@ const EVENTS = ['Freestyle','Backstroke','Breaststroke','Butterfly','Relay'];
   <div class="card">
     <div class="card-title"><span class="badge">2</span>Event Selection &amp; Details</div>
     <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem">
-      Select <strong>exactly 3 events</strong> for each child, then fill in the distance and heat/lane.
+      Select <strong>exactly 3 events</strong> for each child from their category. You can select the same event with different distances (e.g., 50m Freestyle &amp; 100m Freestyle). Fill in the heat/lane for each.
     </p>
     <!-- dynamically built per child -->
     <div id="event-details-container"></div>
@@ -483,37 +605,62 @@ function buildEventSection(){
   con.innerHTML = '';
 
   regs.forEach((r, ci) => {
+    // Get available events for this child's category
+    const categoryData = CATEGORY_EVENTS[r.age] || CATEGORY_EVENTS['I'];
+    const availableEvents = categoryData.events;
+
     // ── outer child block ──
     const block = document.createElement('div');
     block.className = 'child-event-block';
     block.id = 'ceb_' + ci;
 
+    // Build event + distance combinations
+    let eventDistOptions = [];
+    availableEvents.forEach(event => {
+      const distances = categoryData.distances[event] || [];
+      distances.forEach(dist => {
+        eventDistOptions.push({
+          event: event,
+          distance: dist,
+          label: `${event} (${dist}m)`
+        });
+      });
+    });
+
+    let categoryInfo = `<div class="category-info">
+      <strong>${categoryData.name}</strong><br>
+      Available events: ${availableEvents.join(', ')}
+    </div>`;
+
     block.innerHTML = `
+      ${categoryInfo}
       <div class="child-event-header">
         <div class="child-event-name">Child ${ci+1} — ${r.fn} ${r.ln}</div>
         <div class="child-event-count" id="ecount_${ci}">0 / 3 selected</div>
       </div>
 
       <p style="font-size:12px;color:var(--muted);margin-bottom:.75rem">
-        Tick <strong>exactly 3 events</strong>. Distance and heat fields will appear after selection.
+        Select <strong>exactly 3 events</strong> from the options below. You can select the same event with different distances!
       </p>
 
-      <!-- Event checkboxes -->
+      <!-- Event + Distance checkboxes -->
       <div class="events-grid" id="evgrid_${ci}">
-        ${EVENTS.map((ev, ei) => `
+        ${eventDistOptions.map((opt, ei) => `
           <div class="ev-opt">
             <input type="checkbox"
               id="cev_${ci}_${ei}"
-              value="${ev}"
+              value="${opt.label}"
+              data-event="${opt.event}"
+              data-distance="${opt.distance}m"
               onchange="onEventToggle(${ci})">
             <label for="cev_${ci}_${ei}">
-              <div class="ev-check"></div>${ev}
+              <div class="ev-check"></div>${opt.label}
             </label>
           </div>
         `).join('')}
       </div>
 
-      <!-- Distance + heat fields — shown per selected event -->
+      <!-- Heat/Lane fields — shown per selected event -->
       <div id="evdist_${ci}"></div>
     `;
 
@@ -521,21 +668,19 @@ function buildEventSection(){
 
     // restore previously saved selections
     if(r.events && r.events.length){
-      r.events.forEach(ev => {
-        const ei = EVENTS.indexOf(ev);
-        if(ei >= 0){
-          const cb = document.getElementById(`cev_${ci}_${ei}`);
-          if(cb) cb.checked = true;
-        }
+      r.eventDetails.forEach((ed, idx) => {
+        const checkboxes = Array.from(document.querySelectorAll(`#evgrid_${ci} input[type=checkbox]`));
+        const cb = checkboxes.find(c => c.dataset.event === ed.event && c.dataset.distance === ed.distance);
+        if(cb) cb.checked = true;
       });
-      renderDistFields(ci, r);
+      renderHeatFields(ci, r);
     }
   });
 }
 
 // called every time a checkbox changes for child ci
 function onEventToggle(ci){
-  const checkboxes = EVENTS.map((_, ei) => document.getElementById(`cev_${ci}_${ei}`));
+  const checkboxes = Array.from(document.querySelectorAll(`#evgrid_${ci} input[type=checkbox]`));
   const checked = checkboxes.filter(cb => cb && cb.checked);
 
   if(checked.length > 3){
@@ -549,45 +694,44 @@ function onEventToggle(ci){
   badge.textContent = checked.length + ' / 3 selected';
   badge.className = 'child-event-count' + (checked.length === 3 ? ' full' : checked.length > 3 ? ' over' : '');
 
-  renderDistFields(ci);
+  renderHeatFields(ci);
 }
 
-// render distance+heat inputs for currently checked events of child ci
-function renderDistFields(ci, savedReg){
+// render heat/lane inputs for currently checked events of child ci
+function renderHeatFields(ci, savedReg){
   const container = document.getElementById('evdist_'+ci);
   container.innerHTML = '';
 
-  const checkedEvents = EVENTS.filter((_, ei) => {
-    const cb = document.getElementById(`cev_${ci}_${ei}`);
-    return cb && cb.checked;
-  });
+  const checkboxes = Array.from(document.querySelectorAll(`#evgrid_${ci} input[type=checkbox]`));
+  const checkedItems = checkboxes.filter(cb => cb && cb.checked).map(cb => ({
+    event: cb.dataset.event,
+    distance: cb.dataset.distance,
+    label: cb.value
+  }));
 
-  if(!checkedEvents.length) return;
+  if(!checkedItems.length) return;
 
-  checkedEvents.forEach((ev, idx) => {
-    const saved = savedReg?.eventDetails?.find(d => d.event === ev);
+  checkedItems.forEach((item, idx) => {
+    const saved = savedReg?.eventDetails?.find(d => d.event === item.event && d.distance === item.distance);
+    
     const div = document.createElement('div');
-    div.className = 'event-dist-block';
+    div.className = 'heat-block';
     div.innerHTML = `
-      <div class="event-dist-title">${ev}</div>
-      <div class="dist-row">
-        <div class="ev-field">
-          <label>Distance</label>
-          <select id="dist_${ci}_${ev.replace(/\s/g,'_')}">
-            <option value="">Select distance</option>
-            <option ${saved?.distance==='25m'?'selected':''}>25m</option>
-            <option ${saved?.distance==='50m'?'selected':''}>50m</option>
-            <option ${saved?.distance==='100m'?'selected':''}>100m</option>
-            <option ${saved?.distance==='200m'?'selected':''}>200m</option>
-            <option ${saved?.distance==='400m'?'selected':''}>400m</option>
-          </select>
-        </div>
-        <div class="ev-field">
-          <label>Heat / Lane</label>
+      <div class="heat-block-title">${item.label}</div>
+      <div class="heat-field">
+        <div>
+          <label>Heat</label>
           <input type="text"
-            id="heat_${ci}_${ev.replace(/\s/g,'_')}"
-            placeholder="e.g. Heat 2, Lane 3"
+            id="heat_${ci}_${idx}"
+            placeholder="e.g. Heat 2"
             value="${saved?.heat||''}"/>
+        </div>
+        <div>
+          <label>Lane</label>
+          <input type="text"
+            id="lane_${ci}_${idx}"
+            placeholder="e.g. Lane 3"
+            value="${saved?.lane||''}"/>
         </div>
       </div>
     `;
@@ -601,10 +745,8 @@ function toSec3(){
   let hasErr = false;
 
   regs.forEach((r, ci) => {
-    const selected = EVENTS.filter((_, ei) => {
-      const cb = document.getElementById(`cev_${ci}_${ei}`);
-      return cb && cb.checked;
-    });
+    const checkboxes = Array.from(document.querySelectorAll(`#evgrid_${ci} input[type=checkbox]`));
+    const selected = checkboxes.filter(cb => cb && cb.checked);
 
     if(selected.length !== 3){
       hasErr = true;
@@ -612,11 +754,12 @@ function toSec3(){
       const badge = document.getElementById('ecount_'+ci);
       if(badge){ badge.className = 'child-event-count over'; badge.textContent = selected.length + ' / 3 selected'; }
     } else {
-      r.events = selected;
-      r.eventDetails = selected.map(ev => ({
-        event: ev,
-        distance: document.getElementById(`dist_${ci}_${ev.replace(/\s/g,'_')}`)?.value || '',
-        heat:     document.getElementById(`heat_${ci}_${ev.replace(/\s/g,'_')}`)?.value || ''
+      r.events = selected.map(cb => `${cb.dataset.event} (${cb.dataset.distance})`);
+      r.eventDetails = selected.map((cb, idx) => ({
+        event: cb.dataset.event,
+        distance: cb.dataset.distance,
+        heat:     document.getElementById(`heat_${ci}_${idx}`)?.value || '',
+        lane:     document.getElementById(`lane_${ci}_${idx}`)?.value || ''
       }));
     }
   });
@@ -628,16 +771,11 @@ function toSec3(){
   }
 
   // populate setup section
- document.getElementById('fee-input').value = CFG.feePerChild;
-
-// force update fee variable
-feePC = CFG.feePerChild;  
-
-document.getElementById('child-count-display').textContent =
-  numC + ' child' + (numC > 1 ? 'ren' : '') + ' registered';
-
-// force UI refresh
-calcFee();
+  document.getElementById('fee-input').value = CFG.feePerChild;
+  feePC = CFG.feePerChild;  
+  document.getElementById('child-count-display').textContent =
+    numC + ' child' + (numC > 1 ? 'ren' : '') + ' registered';
+  calcFee();
   show('sec3'); setStepper(3);
 }
 
@@ -724,18 +862,18 @@ function dlExcel(){
   const wb = XLSX.utils.book_new();
   const hdrs = ['#','First Name','Last Name','DOB','Category','Gender','Club/School',
     "Father's Name","Father's Mobile","Mother's Name","Mother's Mobile",
-    'Event 1','Dist 1','Heat 1','Event 2','Dist 2','Heat 2','Event 3','Dist 3','Heat 3',
+    'Event 1','Heat 1','Lane 1','Event 2','Heat 2','Lane 2','Event 3','Heat 3','Lane 3',
     'Fee (₹)','UTR','Date','Time'];
   const rows = regs.map((r,i) => [
     i+1, r.fn, r.ln, r.dob, r.age, r.gender, r.club,
     r.faName, r.faMob, r.maName, r.maMob,
-    r.events?.[0]||'', r.eventDetails?.[0]?.distance||'', r.eventDetails?.[0]?.heat||'',
-    r.events?.[1]||'', r.eventDetails?.[1]?.distance||'', r.eventDetails?.[1]?.heat||'',
-    r.events?.[2]||'', r.eventDetails?.[2]?.distance||'', r.eventDetails?.[2]?.heat||'',
+    r.events?.[0]||'', r.eventDetails?.[0]?.heat||'', r.eventDetails?.[0]?.lane||'',
+    r.events?.[1]||'', r.eventDetails?.[1]?.heat||'', r.eventDetails?.[1]?.lane||'',
+    r.events?.[2]||'', r.eventDetails?.[2]?.heat||'', r.eventDetails?.[2]?.lane||'',
     feePC, utrVal, new Date().toLocaleDateString('en-IN'), new Date().toLocaleTimeString('en-IN')
   ]);
   const ws = XLSX.utils.aoa_to_sheet([hdrs,...rows]);
-  ws['!cols'] = [4,14,14,12,10,8,16,16,13,16,13,12,8,14,12,8,14,12,8,14,10,20,12,12].map(w=>({wch:w}));
+  ws['!cols'] = [4,14,14,12,10,8,16,16,13,16,13,20,8,10,20,8,10,20,8,10,10,20,12,12].map(w=>({wch:w}));
   const sum = [['Swimming Registration Summary'],[],
     ['Club',CFG.clubName],['Total Children',regs.length],
     ['Fee Per Child',feePC],['Total Fee',feePC*regs.length],
