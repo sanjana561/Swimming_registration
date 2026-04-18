@@ -254,25 +254,73 @@ const CATEGORY_EVENTS = {
 };
 
 // ── PAYMENT FUNCTIONS ──
+function getPaymentTotal(){
+  const enteredFee = parseFloat(document.getElementById('fee-input')?.value);
+  const perChild = Number.isFinite(enteredFee) ? enteredFee : feePC;
+  return perChild * numC;
+}
+
+function buildUpiPaymentUrl(baseUrl = 'upi://pay'){
+  const params = new URLSearchParams({
+    pa: CFG.upiId,
+    pn: CFG.clubName,
+    am: getPaymentTotal().toFixed(2),
+    cu: 'INR',
+    tn: 'Swimming Registration'
+  });
+  return `${baseUrl}?${params.toString()}`;
+}
+
+function launchUpiUrl(url){
+  const link = document.createElement('a');
+  link.href = url;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
 function openGooglePay(){
-  const tot = parseFloat(document.getElementById('fee-input').value) * numC;
+  const gpayUrl = buildUpiPaymentUrl('tez://upi/pay');
+  const genericUpiUrl = buildUpiPaymentUrl('upi://pay');
+  const fallbackTimer = window.setTimeout(() => {
+    if(document.visibilityState === 'visible') launchUpiUrl(genericUpiUrl);
+  }, 900);
+  const clearFallback = () => window.clearTimeout(fallbackTimer);
 
-  const upiUrl = `upi://pay?pa=${CFG.upiId}&pn=${encodeURIComponent(CFG.clubName)}&am=${tot}&cu=INR&tn=${encodeURIComponent('Swimming Registration')}`;
+  window.addEventListener('blur', clearFallback, { once: true });
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'hidden') clearFallback();
+  }, { once: true });
 
-  // Try opening via new window (better support)
-  window.open(upiUrl, '_self');
+  launchUpiUrl(gpayUrl);
 }
 
 function openUPIApp(){
-  const tot = parseFloat(document.getElementById('fee-input').value) * numC;
-  const upiUrl = `upi://pay?pa=${CFG.upiId}&pn=${encodeURIComponent(CFG.clubName)}&am=${tot}&cu=INR&tn=${encodeURIComponent('Swimming Registration')}`;
-  window.open(upiUrl, "_self");
+  launchUpiUrl(buildUpiPaymentUrl('upi://pay'));
+}
+
+function fallbackCopyText(text){
+  const input = document.createElement('input');
+  input.value = text;
+  input.setAttribute('readonly', '');
+  input.style.position = 'absolute';
+  input.style.left = '-9999px';
+  document.body.appendChild(input);
+  input.select();
+  document.execCommand('copy');
+  input.remove();
+  alert('UPI ID copied to clipboard!');
 }
 
 function copyToClipboard(text){
-  navigator.clipboard.writeText(text).then(() => {
-    alert('UPI ID copied to clipboard!');
-  });
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text)
+      .then(() => alert('UPI ID copied to clipboard!'))
+      .catch(() => fallbackCopyText(text));
+    return;
+  }
+  fallbackCopyText(text);
 }
 
 // ── FORMAT DATE ──
@@ -519,7 +567,7 @@ document.getElementById('hero-club').textContent = CFG.clubName;
 
 let numC = 0, feePC = CFG.feePerChild, curC = 0;
 let regs = [], utrVal = '';
-let qrGenerated = false;
+let lastQrValue = '';
 
 function fmt(n){ 
   return '₹' + Number(n).toLocaleString('en-IN', {
@@ -803,7 +851,7 @@ function toSec4(){
   feePC = parseFloat(document.getElementById('fee-input').value);
   if(!feePC || feePC < 1){ document.getElementById('fee-err').style.display='block'; return; }
   document.getElementById('fee-err').style.display = 'none';
-  const tot = feePC * numC;
+  const tot = getPaymentTotal();
   document.getElementById('pay-amt').textContent = fmt(tot);
   document.getElementById('pay-amount-display').textContent = fmt(tot);
   document.getElementById('pay-sub').textContent = numC + ' child' + (numC > 1 ? 'ren' : '') + ' · ' + fmt(feePC) + ' each';
@@ -811,13 +859,13 @@ function toSec4(){
   document.getElementById('bd-cnt').textContent = numC;
   document.getElementById('bd-tot').textContent = fmt(tot);
 
-  if(!qrGenerated){
-    const upiUrl = `upi://pay?pa=${CFG.upiId}&pn=${encodeURIComponent(CFG.clubName)}&am=${tot}&cu=INR&tn=${encodeURIComponent('Swimming Registration')}`;
+  const upiUrl = buildUpiPaymentUrl('upi://pay');
+  if(lastQrValue !== upiUrl){
     document.getElementById('qr-canvas').innerHTML = '';
     new QRCode(document.getElementById('qr-canvas'),{text:upiUrl,width:160,height:160,colorDark:'#0a1628',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
     document.getElementById('qr-upi-txt').textContent = CFG.upiId;
     document.getElementById('qr-club-txt').textContent = CFG.clubName;
-    qrGenerated = true;
+    lastQrValue = upiUrl;
   }
   show('sec4'); setStepper(4);
 }
@@ -896,7 +944,7 @@ function dlExcel(){
 }
 
 function resetAll(){
-  numC=0; feePC=CFG.feePerChild; curC=0; regs=[]; utrVal=''; qrGenerated=false;
+  numC=0; feePC=CFG.feePerChild; curC=0; regs=[]; utrVal=''; lastQrValue='';
   clearChildForm();
   document.getElementById('cn-badge').textContent='1';
   document.getElementById('child-lbl').textContent='Child 1';
