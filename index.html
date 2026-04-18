@@ -54,7 +54,6 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);min-height:100vh;color
 .child-tab.done{background:var(--teal-dim);color:var(--teal);border-color:var(--teal)}
 .child-tab.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
 
-/* ── EVENT + DISTANCE SELECTION ── */
 .events-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .ev-opt input[type=checkbox]{display:none}
 .ev-opt label{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);background:#fff;transition:all .15s;user-select:none}
@@ -64,7 +63,6 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);min-height:100vh;color
 .ev-opt input:checked+label .ev-check{background:var(--blue);border-color:var(--blue)}
 .ev-opt input:checked+label .ev-check::after{content:'';width:9px;height:6px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translateY(-1px);display:block}
 
-/* ── CHILD EVENT BLOCK ── */
 .child-event-block{background:#f8faff;border:1px solid #c7d9fa;border-radius:var(--r);padding:1.25rem;margin-bottom:1rem}
 .child-event-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid #c7d9fa}
 .child-event-name{font-size:14px;font-weight:700;color:var(--navy)}
@@ -72,7 +70,6 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);min-height:100vh;color
 .child-event-count.full{background:#dcfce7;color:#15803d}
 .child-event-count.over{background:var(--red-dim);color:var(--red)}
 
-/* ── HEAT BLOCK ── */
 .heat-block{background:#fff;border:1px solid var(--border);border-radius:var(--rs);padding:1rem;margin-top:.75rem}
 .heat-block-title{font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
 .heat-block-title::before{content:'✓';color:var(--teal);font-weight:700}
@@ -83,15 +80,15 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);min-height:100vh;color
 
 .category-info{background:#f0f7ff;border:1px solid #c7d9fa;border-radius:var(--rs);padding:10px 12px;margin-bottom:1rem;font-size:12px;color:var(--navy);font-weight:500}
 
-/* ── PAYMENT ── */
 .pay-hero{background:var(--navy);border-radius:var(--r);padding:1.5rem;text-align:center;margin-bottom:1rem;position:relative;overflow:hidden}
 .pay-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(26,110,245,.4) 0%,transparent 65%);pointer-events:none}
 .pay-amount{font-size:42px;font-weight:700;color:#fff;font-family:'JetBrains Mono',monospace;letter-spacing:-1px;position:relative;z-index:1}
 .pay-label{font-size:13px;color:rgba(255,255,255,.55);margin-top:4px;position:relative;z-index:1}
 .qr-wrap{background:#fff;border-radius:var(--r);padding:1.25rem;text-align:center;border:1px solid var(--border);margin-bottom:1rem}
-.qr-inner{display:inline-block;padding:12px;background:#fff;border-radius:8px;border:1px solid var(--border)}
-.qr-upi{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:var(--blue);margin-top:10px}
-.qr-club{font-size:12px;color:var(--muted);margin-top:3px}
+.qr-inner{display:inline-block;padding:12px;background:#fff;border-radius:8px;border:1px solid var(--border);margin:12px 0}
+.qr-upi{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--blue);margin-top:8px;padding:8px;background:#f0f7ff;border-radius:6px;border:1px solid #c7d9fa;cursor:pointer;user-select:all}
+.qr-upi:hover{background:#e8f0fe}
+.qr-club{font-size:11px;color:var(--muted);margin-top:4px}
 .pay-steps{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--rs);padding:.875rem 1rem;margin-bottom:1rem}
 .pay-steps p{font-size:13px;color:#92400e;font-weight:500;margin-bottom:6px}
 .pay-steps ol{padding-left:1.1rem}
@@ -99,13 +96,11 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);min-height:100vh;color
 .breakdown{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--border)}
 .breakdown.tot{font-size:15px;font-weight:700;color:var(--text);border-bottom:none;padding-top:8px}
 
-/* ── SETUP FEE ── */
 .fee-summary{background:#f1f5f9;padding:1.25rem;border-radius:12px;margin-bottom:1.5rem}
 .summary-row{display:flex;justify-content:space-between;font-size:14px;color:#64748b;margin-bottom:.5rem}
 .summary-total{display:flex;justify-content:space-between;margin-top:.75rem;padding-top:.75rem;border-top:2px dashed #cbd5e1;font-weight:700;font-size:18px;color:#0f172a}
 .read-only-display{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;padding:.75rem 1rem;font-weight:600;color:#1e293b;font-size:14px}
 
-/* ── BUTTONS ── */
 .btn{width:100%;padding:13px;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn+.btn{margin-top:8px}
 .btn-blue{background:var(--blue);color:#fff;margin-top:1.25rem}
@@ -117,7 +112,6 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);min-height:100vh;color
 .btn-back{background:none;border:none;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:4px;padding:0;margin-bottom:.875rem;font-family:'Outfit',sans-serif}
 .btn-back:hover{color:var(--text)}
 
-/* ── SUCCESS ── */
 .success-icon{width:64px;height:64px;border-radius:50%;background:var(--teal-dim);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
 .reg-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:.5rem}
 .reg-table th{background:var(--bg);padding:7px 10px;text-align:left;font-weight:700;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
@@ -146,7 +140,6 @@ const CFG = {
   scriptUrl:  "https://script.google.com/macros/s/AKfycbyPCoTutYsGM-y7W-wv0CAh8p_hS8oNWjSK4UvmZwPDPPqr4Kh6h029BJJRAM45UaEBbg/exec",
 };
 
-// Category-specific events and distances based on age groups
 const CATEGORY_EVENTS = {
   'I': {
     name: 'Group I (Boys / Girls) Y.B 2011-2012',
@@ -259,6 +252,35 @@ const CATEGORY_EVENTS = {
     relays: []
   }
 };
+
+// ── PAYMENT FUNCTIONS ──
+function openGooglePay(){
+  const tot = parseFloat(document.getElementById('fee-input').value) * numC;
+  const upiUrl = `upi://pay?pa=${CFG.upiId}&pn=${encodeURIComponent(CFG.clubName)}&am=${tot}&cu=INR&tn=${encodeURIComponent('Swimming Registration')}`;
+  window.location.href = upiUrl;
+}
+
+function openUPIApp(){
+  const tot = parseFloat(document.getElementById('fee-input').value) * numC;
+  const upiUrl = `upi://pay?pa=${CFG.upiId}&pn=${encodeURIComponent(CFG.clubName)}&am=${tot}&cu=INR&tn=${encodeURIComponent('Swimming Registration')}`;
+  window.location.href = upiUrl;
+}
+
+function copyToClipboard(text){
+  navigator.clipboard.writeText(text).then(() => {
+    alert('UPI ID copied to clipboard!');
+  });
+}
+
+// ── FORMAT DATE ──
+function formatDate(dateStr){
+  if(!dateStr) return '';
+  const date = new Date(dateStr + 'T00:00:00');
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+}
 </script>
 
 <div class="overlay" id="overlay">
@@ -288,7 +310,6 @@ const CATEGORY_EVENTS = {
 
 <div class="wrap">
 
-<!-- ══════════ SEC 1 — CHILD DETAILS ══════════ -->
 <div id="sec1">
   <div class="card" style="background:linear-gradient(135deg,#f0f7ff,#e8f0fe);border-color:#c7d9fa;margin-bottom:.75rem">
     <p style="font-size:12px;color:var(--muted);line-height:1.6">
@@ -304,10 +325,10 @@ const CATEGORY_EVENTS = {
     <div class="card-title"><span class="badge" id="cn-badge">1</span>Child Details</div>
     <div class="row2">
       <div class="field"><label>First name (Block Letters)</label><input type="text" id="c-fn" /></div>
-      <div class="field"><label>Last name (Block Letters)</label><input type="text" id="c-ln"/></div>
+      <!-- <div class="field"><label>Last name (Block Letters)</label><input type="text" id="c-ln"/></div> -->
     </div>
     <div class="row2">
-      <div class="field"><label>Date of birth</label><input type="date" id="c-dob"/></div>
+      <div class="field"><label>Date of birth (DD-MM-YYYY)</label><input type="date" id="c-dob"/></div>
       <div class="field"><label>Age group / Category</label>
         <select id="c-age">
           <option value="">Select</option>
@@ -356,7 +377,6 @@ const CATEGORY_EVENTS = {
   </div>
 </div>
 
-<!-- ══════════ SEC 2 — EVENTS (select + distance per child) ══════════ -->
 <div id="sec2" style="display:none">
   <button class="btn-back" onclick="goToLastChild()">← Back to children</button>
 
@@ -370,14 +390,12 @@ const CATEGORY_EVENTS = {
     <p style="font-size:13px;color:var(--muted);margin-bottom:1.25rem">
       Select <strong>exactly 3 events</strong> for each child from their category. You can select the same event with different distances (e.g., 50m Freestyle &amp; 100m Freestyle). Fill in the heat/lane for each.
     </p>
-    <!-- dynamically built per child -->
     <div id="event-details-container"></div>
     <p class="err" id="ev-global-err" style="margin-bottom:.5rem">Please select exactly 3 events for every child.</p>
     <button class="btn btn-blue" onclick="toSec3()">Continue to Setup →</button>
   </div>
 </div>
 
-<!-- ══════════ SEC 3 — SETUP ══════════ -->
 <div id="sec3" style="display:none">
   <button class="btn-back" onclick="show('sec2');setStepper(2)">← Back to events</button>
   <div class="v-badge">
@@ -409,29 +427,43 @@ const CATEGORY_EVENTS = {
   </div>
 </div>
 
-<!-- ══════════ SEC 4 — PAYMENT ══════════ -->
 <div id="sec4" style="display:none">
   <button class="btn-back" onclick="show('sec3');setStepper(3)">← Back to setup</button>
   <div class="pay-hero">
     <div class="pay-amount" id="pay-amt">₹0</div>
     <div class="pay-label" id="pay-sub"></div>
   </div>
+  
   <div class="qr-wrap">
-    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;font-weight:600">SCAN TO PAY</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">CHOOSE PAYMENT METHOD</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+      <button class="btn btn-blue" style="margin-top:0;background:#1f2937" onclick="openGooglePay()" title="Opens your default UPI app">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" opacity="0.8"/><path d="M12 4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" fill="white"/></svg>
+        Pay with Google Pay / Any UPI App
+      </button>
+    </div>
+    
+    <p style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:10px">OR SCAN QR CODE</p>
     <div class="qr-inner"><div id="qr-canvas"></div></div>
-    <div class="qr-upi" id="qr-upi-txt"></div>
-    <div class="qr-club" id="qr-club-txt"></div>
+    
+    <div style="background:#f0f7ff;border:1px solid #c7d9fa;border-radius:8px;padding:10px;text-align:center;margin-top:10px">
+      <p style="font-size:10px;color:var(--muted);margin-bottom:5px">UPI ID (Click to copy)</p>
+      <div class="qr-upi" id="qr-upi-txt" onclick="copyToClipboard(this.textContent)" title="Click to copy"></div>
+      <div class="qr-club" id="qr-club-txt" style="margin-top:4px"></div>
+    </div>
   </div>
+  
   <div class="pay-steps">
     <p>How to pay:</p>
     <ol>
-      <li>Open PhonePe / GPay / Paytm / any UPI app</li>
-      <li>Scan QR above <strong>OR</strong> pay to the UPI ID shown</li>
-      <li>Enter the exact amount shown</li>
-      <li>Note your <strong>UTR / Transaction ID</strong> from the app</li>
-      <li>Enter it below and click Confirm</li>
+      <li>Click <strong>"Pay with Google Pay / Any UPI App"</strong> button above</li>
+      <li>Or scan the QR code with any UPI app</li>
+      <li>Or copy the UPI ID and paste in your preferred app</li>
+      <li>Enter the exact amount shown: <strong id="pay-amount-display">₹0</strong></li>
+      <li>After successful payment, enter your <strong>UTR / Transaction ID</strong> below</li>
     </ol>
   </div>
+
   <div class="card">
     <div class="card-title"><span class="badge">₹</span>Payment Breakdown</div>
     <div class="breakdown"><span>Fee per child</span><span id="bd-per">₹0</span></div>
@@ -447,7 +479,6 @@ const CATEGORY_EVENTS = {
   </div>
 </div>
 
-<!-- ══════════ SEC 5 — DONE ══════════ -->
 <div id="sec5" style="display:none">
   <div class="card" style="text-align:center">
     <div class="success-icon">
@@ -467,18 +498,18 @@ const CATEGORY_EVENTS = {
         <div class="kv"><span>Total children</span><span id="dn-cnt"></span></div>
         <div class="kv"><span>Total fee paid</span><span id="dn-fee" style="color:var(--teal)"></span></div>
         <div class="kv"><span>UTR / Transaction ID</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px" id="dn-utr"></span></div>
-        <div class="kv"><span>Saved to Google Sheets</span><span id="dn-saved"></span></div>
+        <!-- <div class="kv"><span>Saved to Google Sheets</span><span id="dn-saved"></span></div> -->
       </div>
     </div>
     <button class="btn btn-teal" onclick="dlExcel()" style="margin-top:1.25rem">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Download Excel
     </button>
-    <button class="btn btn-ghost" onclick="resetAll()">Register New Group</button>
+    <!-- <button class="btn btn-ghost" onclick="resetAll()">Register New Group</button> -->
   </div>
 </div>
 
-</div><!-- /wrap -->
+</div>
 
 <script>
 document.getElementById('hero-club').textContent = CFG.clubName;
@@ -487,7 +518,6 @@ let numC = 0, feePC = CFG.feePerChild, curC = 0;
 let regs = [], utrVal = '';
 let qrGenerated = false;
 
-// ── HELPERS ──────────────────────────────────────────
 function fmt(n){ return '₹' + Number(n).toLocaleString('en-IN'); }
 
 function show(id){
@@ -505,7 +535,6 @@ function setStepper(n){
   }
 }
 
-// ── CHILD TABS ───────────────────────────────────────
 function buildTabs(){
   const wrap = document.getElementById('child-tabs');
   wrap.innerHTML = '';
@@ -526,9 +555,8 @@ function buildTabs(){
   }
 }
 
-// ── CHILD FORM ───────────────────────────────────────
 function clearChildForm(){
-  ['c-fn','c-ln','c-dob','c-age','c-gen','c-club','c-faname','c-famobno','c-maname','c-motmobno']
+  ['c-fn','c-dob','c-age','c-gen','c-club','c-faname','c-famobno','c-maname','c-motmobno']
     .forEach(id => document.getElementById(id).value = '');
   document.getElementById('child-err').style.display = 'none';
 }
@@ -540,7 +568,7 @@ function loadChild(idx){
   if(regs[idx]){
     const r = regs[idx];
     document.getElementById('c-fn').value = r.fn;
-    document.getElementById('c-ln').value = r.ln;
+  //  document.getElementById('c-ln').value = r.ln;
     document.getElementById('c-dob').value = r.dob;
     document.getElementById('c-age').value = r.age;
     document.getElementById('c-gen').value = r.gender;
@@ -555,13 +583,13 @@ function loadChild(idx){
 
 function validateChildForm(){
   const v = id => document.getElementById(id).value.trim();
-  if(!v('c-fn') || !v('c-ln')){
+  if(!v('c-fn')){
     document.getElementById('child-err').style.display = 'block';
     return null;
   }
   document.getElementById('child-err').style.display = 'none';
   return {
-    fn: v('c-fn'), ln: v('c-ln'), dob: v('c-dob'),
+    fn: v('c-fn'), dob: v('c-dob'),
     age: v('c-age'), gender: v('c-gen'), club: v('c-club'),
     faName: v('c-faname'), faMob: v('c-famobno'),
     maName: v('c-maname'), maMob: v('c-motmobno'),
@@ -597,24 +625,18 @@ function goToLastChild(){
   show('sec1'); setStepper(1);
 }
 
-// ══════════════════════════════════════════════════════
-//  SEC 2 — BUILD EVENT SECTION (select + distance/heat)
-// ══════════════════════════════════════════════════════
 function buildEventSection(){
   const con = document.getElementById('event-details-container');
   con.innerHTML = '';
 
   regs.forEach((r, ci) => {
-    // Get available events for this child's category
     const categoryData = CATEGORY_EVENTS[r.age] || CATEGORY_EVENTS['I'];
     const availableEvents = categoryData.events;
 
-    // ── outer child block ──
     const block = document.createElement('div');
     block.className = 'child-event-block';
     block.id = 'ceb_' + ci;
 
-    // Build event + distance combinations
     let eventDistOptions = [];
     availableEvents.forEach(event => {
       const distances = categoryData.distances[event] || [];
@@ -643,7 +665,6 @@ function buildEventSection(){
         Select <strong>exactly 3 events</strong> from the options below. You can select the same event with different distances!
       </p>
 
-      <!-- Event + Distance checkboxes -->
       <div class="events-grid" id="evgrid_${ci}">
         ${eventDistOptions.map((opt, ei) => `
           <div class="ev-opt">
@@ -660,13 +681,11 @@ function buildEventSection(){
         `).join('')}
       </div>
 
-      <!-- Heat/Lane fields — shown per selected event -->
       <div id="evdist_${ci}"></div>
     `;
 
     con.appendChild(block);
 
-    // restore previously saved selections
     if(r.events && r.events.length){
       r.eventDetails.forEach((ed, idx) => {
         const checkboxes = Array.from(document.querySelectorAll(`#evgrid_${ci} input[type=checkbox]`));
@@ -678,18 +697,15 @@ function buildEventSection(){
   });
 }
 
-// called every time a checkbox changes for child ci
 function onEventToggle(ci){
   const checkboxes = Array.from(document.querySelectorAll(`#evgrid_${ci} input[type=checkbox]`));
   const checked = checkboxes.filter(cb => cb && cb.checked);
 
   if(checked.length > 3){
-    // uncheck the one just ticked
     event.target.checked = false;
     return;
   }
 
-  // update counter badge
   const badge = document.getElementById('ecount_'+ci);
   badge.textContent = checked.length + ' / 3 selected';
   badge.className = 'child-event-count' + (checked.length === 3 ? ' full' : checked.length > 3 ? ' over' : '');
@@ -697,7 +713,6 @@ function onEventToggle(ci){
   renderHeatFields(ci);
 }
 
-// render heat/lane inputs for currently checked events of child ci
 function renderHeatFields(ci, savedReg){
   const container = document.getElementById('evdist_'+ci);
   container.innerHTML = '';
@@ -720,18 +735,11 @@ function renderHeatFields(ci, savedReg){
       <div class="heat-block-title">${item.label}</div>
       <div class="heat-field">
         <div>
-          <label>Heat</label>
+          <label>Event No</label>
           <input type="text"
             id="heat_${ci}_${idx}"
-            placeholder="e.g. Heat 2"
+           
             value="${saved?.heat||''}"/>
-        </div>
-        <div>
-          <label>Lane</label>
-          <input type="text"
-            id="lane_${ci}_${idx}"
-            placeholder="e.g. Lane 3"
-            value="${saved?.lane||''}"/>
         </div>
       </div>
     `;
@@ -739,7 +747,6 @@ function renderHeatFields(ci, savedReg){
   });
 }
 
-// ── VALIDATE & COLLECT events from sec2, then go to sec3 ──
 function toSec3(){
   document.getElementById('ev-global-err').style.display = 'none';
   let hasErr = false;
@@ -750,7 +757,6 @@ function toSec3(){
 
     if(selected.length !== 3){
       hasErr = true;
-      // highlight that child's block
       const badge = document.getElementById('ecount_'+ci);
       if(badge){ badge.className = 'child-event-count over'; badge.textContent = selected.length + ' / 3 selected'; }
     } else {
@@ -759,7 +765,7 @@ function toSec3(){
         event: cb.dataset.event,
         distance: cb.dataset.distance,
         heat:     document.getElementById(`heat_${ci}_${idx}`)?.value || '',
-        lane:     document.getElementById(`lane_${ci}_${idx}`)?.value || ''
+       
       }));
     }
   });
@@ -770,7 +776,6 @@ function toSec3(){
     return;
   }
 
-  // populate setup section
   document.getElementById('fee-input').value = CFG.feePerChild;
   feePC = CFG.feePerChild;  
   document.getElementById('child-count-display').textContent =
@@ -779,7 +784,6 @@ function toSec3(){
   show('sec3'); setStepper(3);
 }
 
-// ── FEE CALC ─────────────────────────────────────────
 function calcFee(){
   feePC = parseFloat(document.getElementById('fee-input').value) || 0;
   document.getElementById('fb-per').textContent = fmt(feePC);
@@ -787,13 +791,13 @@ function calcFee(){
   document.getElementById('fb-tot').textContent = fmt(feePC * numC);
 }
 
-// ── PAYMENT ──────────────────────────────────────────
 function toSec4(){
   feePC = parseFloat(document.getElementById('fee-input').value);
   if(!feePC || feePC < 1){ document.getElementById('fee-err').style.display='block'; return; }
   document.getElementById('fee-err').style.display = 'none';
   const tot = feePC * numC;
   document.getElementById('pay-amt').textContent = fmt(tot);
+  document.getElementById('pay-amount-display').textContent = fmt(tot);
   document.getElementById('pay-sub').textContent = numC + ' child' + (numC > 1 ? 'ren' : '') + ' · ' + fmt(feePC) + ' each';
   document.getElementById('bd-per').textContent = fmt(feePC);
   document.getElementById('bd-cnt').textContent = numC;
@@ -810,7 +814,6 @@ function toSec4(){
   show('sec4'); setStepper(4);
 }
 
-// ── SUBMIT ───────────────────────────────────────────
 async function submitAll(){
   utrVal = document.getElementById('utr-inp').value.trim();
   if(!utrVal || utrVal.length < 6){ document.getElementById('utr-err').style.display='block'; return; }
@@ -853,19 +856,18 @@ function buildSuccess(saved){
   document.getElementById('dn-cnt').textContent = numC;
   document.getElementById('dn-fee').textContent = fmt(feePC * numC);
   document.getElementById('dn-utr').textContent = utrVal;
-  document.getElementById('dn-saved').textContent = saved ? '✓ Yes' : '— Not configured';
-  document.getElementById('dn-saved').style.color = saved ? 'var(--teal)' : 'var(--light)';
+  // document.getElementById('dn-saved').textContent = saved ? '✓ Yes' : '— Not configured';
+  // document.getElementById('dn-saved').style.color = saved ? 'var(--teal)' : 'var(--light)';
 }
 
-// ── EXCEL DOWNLOAD ───────────────────────────────────
 function dlExcel(){
   const wb = XLSX.utils.book_new();
-  const hdrs = ['#','First Name','Last Name','DOB','Category','Gender','Club/School',
+  const hdrs = ['#','Swimmers Name','DOB','Category','Gender','Club/School',
     "Father's Name","Father's Mobile","Mother's Name","Mother's Mobile",
     'Event 1','Heat 1','Lane 1','Event 2','Heat 2','Lane 2','Event 3','Heat 3','Lane 3',
     'Fee (₹)','UTR','Date','Time'];
   const rows = regs.map((r,i) => [
-    i+1, r.fn, r.ln, r.dob, r.age, r.gender, r.club,
+    i+1, r.fn, r.ln, formatDate(r.dob), r.age, r.gender, r.club,
     r.faName, r.faMob, r.maName, r.maMob,
     r.events?.[0]||'', r.eventDetails?.[0]?.heat||'', r.eventDetails?.[0]?.lane||'',
     r.events?.[1]||'', r.eventDetails?.[1]?.heat||'', r.eventDetails?.[1]?.lane||'',
@@ -885,7 +887,6 @@ function dlExcel(){
   XLSX.writeFile(wb,'swimming_reg_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
 
-// ── RESET ────────────────────────────────────────────
 function resetAll(){
   numC=0; feePC=CFG.feePerChild; curC=0; regs=[]; utrVal=''; qrGenerated=false;
   clearChildForm();
