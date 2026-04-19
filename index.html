@@ -526,6 +526,17 @@ function formatDate(dateStr){
   </div>
   
   <div class="qr-wrap">
+    <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#92400e">
+      <strong>⚠️ Bank Limit Exceeded?</strong><br>
+      If you get a bank limit error, try one of these:
+      <ul style="margin:6px 0 0 16px;padding:0">
+        <li>Split payment into smaller amounts</li>
+        <li>Use a different bank account</li>
+        <li>Try after 24 hours (daily limits reset)</li>
+        <li>Contact your bank for limit increase</li>
+      </ul>
+    </div>
+    
     <p style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">PAYMENT OPTIONS</p>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
       <button class="btn btn-blue" style="margin-top:0" onclick="openGooglePay()" title="Opens Google Pay or any UPI app">
@@ -558,6 +569,9 @@ function formatDate(dateStr){
       <li>Complete the payment in your app</li>
       <li>Return here and enter your <strong>UTR / Transaction ID</strong> below</li>
     </ol>
+    <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:8px;margin-top:8px;font-size:11px;color:#92400e">
+      <strong>💡 If payment fails due to bank limit:</strong> UPI has daily limits (usually ₹100K-₹200K). If rejected, split it into 2 payments or try after 24 hours.
+    </div>
   </div>
 
   <div class="card">
@@ -565,12 +579,41 @@ function formatDate(dateStr){
     <div class="breakdown"><span>Fee per child</span><span id="bd-per">₹0</span></div>
     <div class="breakdown"><span>Number of children</span><span id="bd-cnt">0</span></div>
     <div class="breakdown tot"><span>Total payable</span><span id="bd-tot">₹0</span></div>
+    
+    <div id="split-payment-section" style="display:none;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border)">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:.75rem;font-weight:600">💡 Payment Too Large? Split It!</p>
+      <div style="background:#f0f7ff;border:1px solid #c7d9fa;border-radius:8px;padding:10px;margin-bottom:1rem;font-size:12px;color:var(--navy)">
+        Your total is <strong id="split-amount">₹0</strong>. This might exceed your bank's UPI limit.<br>
+        You can make 2 payments instead:
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>First Payment (₹)</label>
+          <input type="number" id="split-1" readonly/>
+        </div>
+        <div class="field">
+          <label>Second Payment (₹)</label>
+          <input type="number" id="split-2" readonly/>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--light);margin-top:.5rem">Make first payment, then return and make second payment. Both UTR details should be entered below.</p>
+    </div>
+
     <div class="field" style="margin-top:1.25rem">
       <label>UTR / Transaction ID</label>
       <input type="text" id="utr-inp" placeholder="Enter UTR after payment" maxlength="24"/>
       <p class="hint">Found in your UPI app after payment is complete</p>
       <p class="err" id="utr-err">Please enter your UTR / transaction ID.</p>
     </div>
+    
+    <div id="split-utr-section" style="display:none;margin-top:1rem">
+      <div class="field">
+        <label>Second Payment UTR (if applicable)</label>
+        <input type="text" id="utr-inp-2" placeholder="Optional: Enter second UTR if you split payment" maxlength="24"/>
+        <p class="hint">Leave blank if you only made one payment</p>
+      </div>
+    </div>
+    
     <button class="btn btn-blue" onclick="submitAll()">Confirm &amp; Submit Registration →</button>
   </div>
 </div>
@@ -899,6 +942,25 @@ function toSec4(){
   document.getElementById('bd-cnt').textContent = numC;
   document.getElementById('bd-tot').textContent = fmt(tot);
 
+  // Show split payment option if amount is large (over ₹50K)
+  const SPLIT_THRESHOLD = 50000;
+  const splitSection = document.getElementById('split-payment-section');
+  const splitUtrSection = document.getElementById('split-utr-section');
+  
+  if(tot > SPLIT_THRESHOLD){
+    splitSection.style.display = 'block';
+    splitUtrSection.style.display = 'block';
+    const half = Math.ceil(tot / 2);
+    const remaining = tot - half;
+    document.getElementById('split-amount').textContent = fmt(tot);
+    document.getElementById('split-1').value = half;
+    document.getElementById('split-2').value = remaining;
+  } else {
+    splitSection.style.display = 'none';
+    splitUtrSection.style.display = 'none';
+    document.getElementById('utr-inp-2').value = '';
+  }
+
   const upiUrl = buildUpiPaymentUrl('upi');
   if(lastQrValue !== upiUrl){
     document.getElementById('qr-canvas').innerHTML = '';
@@ -919,8 +981,17 @@ async function submitAll(){
   overlay.classList.add('show');
   document.getElementById('spin-txt').textContent = 'Saving registrations...';
 
+  // Check for second UTR if split payment was offered
+  const splitSection = document.getElementById('split-payment-section');
+  const utrVal2 = splitSection.style.display !== 'none' ? document.getElementById('utr-inp-2').value.trim() : '';
+  const finalUtrVal = utrVal2 ? `${utrVal} + ${utrVal2}` : utrVal;
+
   const payload = {
-    utr: utrVal, feePerChild: feePC, totalFee: feePC * numC, numChildren: numC,
+    utr: finalUtrVal, 
+    feePerChild: feePC, 
+    totalFee: feePC * numC, 
+    numChildren: numC,
+    paymentType: utrVal2 ? 'split' : 'single',
     registrationDate: new Date().toLocaleDateString('en-IN'),
     registrationTime: new Date().toLocaleTimeString('en-IN'),
     children: regs
@@ -935,11 +1006,11 @@ async function submitAll(){
   document.getElementById('spin-txt').textContent = 'Finishing up...';
   await new Promise(r => setTimeout(r, 600));
   overlay.classList.remove('show');
-  buildSuccess(saved);
+  buildSuccess(saved, finalUtrVal);
   show('sec5'); setStepper(5);
 }
 
-function buildSuccess(saved){
+function buildSuccess(saved, finalUtr){
   const tbody = document.getElementById('reg-tbody');
   tbody.innerHTML = '';
   regs.forEach((r, i) => {
@@ -951,7 +1022,7 @@ function buildSuccess(saved){
   document.getElementById('done-sub').textContent = numC + ' child' + (numC>1?'ren':'')+' registered successfully.';
   document.getElementById('dn-cnt').textContent = numC;
   document.getElementById('dn-fee').textContent = fmt(feePC * numC);
-  document.getElementById('dn-utr').textContent = utrVal;
+  document.getElementById('dn-utr').textContent = finalUtr || utrVal;
 }
 
 function dlExcel(){
