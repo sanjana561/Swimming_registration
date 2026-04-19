@@ -260,57 +260,98 @@ function getPaymentTotal(){
   return perChild * numC;
 }
 
-function buildUpiPaymentUrl(baseUrl = 'upi://pay'){
-  const params = new URLSearchParams({
-    pa: CFG.upiId,
-    pn: CFG.clubName,
-    am: getPaymentTotal().toFixed(2),
-    cu: 'INR',
-    tn: 'Swimming Registration'
-  });
-  return `${baseUrl}?${params.toString()}`;
+function buildUpiPaymentUrl(scheme = 'upi'){
+  const amount = getPaymentTotal().toFixed(2);
+  const upiId = encodeURIComponent(CFG.upiId);
+  const clubName = encodeURIComponent(CFG.clubName);
+  const description = encodeURIComponent('Swimming Registration');
+  
+  if(scheme === 'upi'){
+    return `upi://pay?pa=${upiId}&pn=${clubName}&am=${amount}&cu=INR&tn=${description}`;
+  } else if(scheme === 'gpay'){
+    return `tez://upi/pay?pa=${upiId}&pn=${clubName}&am=${amount}&cu=INR&tn=${description}`;
+  } else if(scheme === 'phonepe'){
+    return `phonepe://upi/pay?pa=${upiId}&pn=${clubName}&am=${amount}&cu=INR&tn=${description}`;
+  }
+  return '';
 }
 
 function launchUpiUrl(url){
-  const link = document.createElement('a');
-  link.href = url;
-  link.style.display = 'none';
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
+  try {
+    const link = document.createElement('a');
+    link.href = url;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch(e) {
+    console.error('Error launching URL:', e);
+  }
 }
 
 function openGooglePay(){
-  const gpayUrl = buildUpiPaymentUrl('tez://upi/pay');
-  const genericUpiUrl = buildUpiPaymentUrl('upi://pay');
-  const fallbackTimer = window.setTimeout(() => {
-    if(document.visibilityState === 'visible') launchUpiUrl(genericUpiUrl);
-  }, 900);
-  const clearFallback = () => window.clearTimeout(fallbackTimer);
+  const startTime = Date.now();
+  const appLaunchTimeout = 2500; // 2.5 seconds to detect app launch
+  let appDetected = false;
 
-  window.addEventListener('blur', clearFallback, { once: true });
-  document.addEventListener('visibilitychange', () => {
-    if(document.visibilityState === 'hidden') clearFallback();
-  }, { once: true });
+  // Monitor visibility change to detect app switch
+  const visibilityHandler = () => {
+    if(document.hidden) {
+      appDetected = true;
+      clearAllTimers();
+    }
+  };
 
-  launchUpiUrl(gpayUrl);
+  // Fallback timer - show manual options if app doesn't open
+  const fallbackTimer = setTimeout(() => {
+    if(!appDetected && document.visibilityState === 'visible'){
+      clearAllTimers();
+      showPaymentFallback();
+    }
+  }, appLaunchTimeout);
+
+  const clearAllTimers = () => {
+    clearTimeout(fallbackTimer);
+    document.removeEventListener('visibilitychange', visibilityHandler);
+  };
+
+  document.addEventListener('visibilitychange', visibilityHandler);
+
+  // Try Google Pay first
+  launchUpiUrl(buildUpiPaymentUrl('gpay'));
 }
 
 function openUPIApp(){
-  launchUpiUrl(buildUpiPaymentUrl('upi://pay'));
+  launchUpiUrl(buildUpiPaymentUrl('upi'));
+}
+
+function showPaymentFallback(){
+  alert(
+    'Unable to open UPI app automatically.\n\n' +
+    'Please use one of these options:\n\n' +
+    '1. Scan the QR code below\n' +
+    '2. Copy the UPI ID and enter it manually in your UPI app\n\n' +
+    'UPI ID: ' + CFG.upiId
+  );
 }
 
 function fallbackCopyText(text){
-  const input = document.createElement('input');
-  input.value = text;
-  input.setAttribute('readonly', '');
-  input.style.position = 'absolute';
-  input.style.left = '-9999px';
-  document.body.appendChild(input);
-  input.select();
-  document.execCommand('copy');
-  input.remove();
-  alert('UPI ID copied to clipboard!');
+  try {
+    const input = document.createElement('input');
+    input.value = text;
+    input.setAttribute('readonly', '');
+    input.style.position = 'absolute';
+    input.style.left = '-9999px';
+    document.body.appendChild(input);
+    input.select();
+    input.setSelectionRange(0, 99999);
+    document.execCommand('copy');
+    document.body.removeChild(input);
+    alert('UPI ID copied to clipboard!');
+  } catch(e){
+    console.error('Copy failed:', e);
+    alert('Could not copy. UPI ID: ' + text);
+  }
 }
 
 function copyToClipboard(text){
@@ -376,7 +417,6 @@ function formatDate(dateStr){
     <div class="card-title"><span class="badge" id="cn-badge">1</span>Child Details</div>
     <div class="row2">
       <div class="field"><label>First name (Block Letters)</label><input type="text" id="c-fn" /></div>
-      <!-- <div class="field"><label>Last name (Block Letters)</label><input type="text" id="c-ln"/></div> -->
     </div>
     <div class="row2">
       <div class="field"><label>Date of birth (DD-MM-YYYY)</label><input type="date" id="c-dob"/></div>
@@ -486,15 +526,19 @@ function formatDate(dateStr){
   </div>
   
   <div class="qr-wrap">
-    <p style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">CHOOSE PAYMENT METHOD</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">PAYMENT OPTIONS</p>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
-      <button class="btn btn-blue" style="margin-top:0;background:#1f2937" onclick="openGooglePay()" title="Opens your default UPI app">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" opacity="0.8"/><path d="M12 4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" fill="white"/></svg>
-        Pay with Google Pay / Any UPI App
+      <button class="btn btn-blue" style="margin-top:0" onclick="openGooglePay()" title="Opens Google Pay or any UPI app">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="7" fill="white"/></svg>
+        Open UPI App (Google Pay)
+      </button>
+      <button class="btn btn-blue" style="margin-top:0;background:#6c5ce7" onclick="openUPIApp()" title="Opens default UPI app">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>
+        Manual UPI Payment
       </button>
     </div>
     
-    <p style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:10px">OR SCAN QR CODE</p>
+    <p style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:10px;font-weight:600">OR SCAN QR CODE</p>
     <div class="qr-inner"><div id="qr-canvas"></div></div>
     
     <div style="background:#f0f7ff;border:1px solid #c7d9fa;border-radius:8px;padding:10px;text-align:center;margin-top:10px">
@@ -507,11 +551,12 @@ function formatDate(dateStr){
   <div class="pay-steps">
     <p>How to pay:</p>
     <ol>
-      <li>Click <strong>"Pay with Google Pay / Any UPI App"</strong> button above</li>
-      <li>Or scan the QR code with any UPI app</li>
-      <li>Or copy the UPI ID and paste in your preferred app</li>
+      <li>Click <strong>"Open UPI App"</strong> button above to open your preferred app</li>
+      <li>Or scan the QR code with any UPI app (Google Pay, PhonePe, Paytm, etc.)</li>
+      <li>Or copy the UPI ID and manually enter it in your app</li>
       <li>Enter the exact amount shown: <strong id="pay-amount-display">₹0</strong></li>
-      <li>After successful payment, enter your <strong>UTR / Transaction ID</strong> below</li>
+      <li>Complete the payment in your app</li>
+      <li>Return here and enter your <strong>UTR / Transaction ID</strong> below</li>
     </ol>
   </div>
 
@@ -549,14 +594,12 @@ function formatDate(dateStr){
         <div class="kv"><span>Total children</span><span id="dn-cnt"></span></div>
         <div class="kv"><span>Total fee paid</span><span id="dn-fee" style="color:var(--teal)"></span></div>
         <div class="kv"><span>UTR / Transaction ID</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px" id="dn-utr"></span></div>
-        <!-- <div class="kv"><span>Saved to Google Sheets</span><span id="dn-saved"></span></div> -->
       </div>
     </div>
     <button class="btn btn-teal" onclick="dlExcel()" style="margin-top:1.25rem">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Download Excel
     </button>
-    <!-- <button class="btn btn-ghost" onclick="resetAll()">Register New Group</button> -->
   </div>
 </div>
 
@@ -624,7 +667,6 @@ function loadChild(idx){
   if(regs[idx]){
     const r = regs[idx];
     document.getElementById('c-fn').value = r.fn;
-  //  document.getElementById('c-ln').value = r.ln;
     document.getElementById('c-dob').value = r.dob;
     document.getElementById('c-age').value = r.age;
     document.getElementById('c-gen').value = r.gender;
@@ -713,7 +755,7 @@ function buildEventSection(){
     block.innerHTML = `
       ${categoryInfo}
       <div class="child-event-header">
-        <div class="child-event-name">Child ${ci+1} — ${r.fn} ${r.ln}</div>
+        <div class="child-event-name">Child ${ci+1} — ${r.fn}</div>
         <div class="child-event-count" id="ecount_${ci}">0 / 3 selected</div>
       </div>
 
@@ -794,7 +836,6 @@ function renderHeatFields(ci, savedReg){
           <label>Event No</label>
           <input type="text"
             id="heat_${ci}_${idx}"
-           
             value="${saved?.heat||''}"/>
         </div>
       </div>
@@ -821,7 +862,6 @@ function toSec3(){
         event: cb.dataset.event,
         distance: cb.dataset.distance,
         heat:     document.getElementById(`heat_${ci}_${idx}`)?.value || '',
-       
       }));
     }
   });
@@ -859,7 +899,7 @@ function toSec4(){
   document.getElementById('bd-cnt').textContent = numC;
   document.getElementById('bd-tot').textContent = fmt(tot);
 
-  const upiUrl = buildUpiPaymentUrl('upi://pay');
+  const upiUrl = buildUpiPaymentUrl('upi');
   if(lastQrValue !== upiUrl){
     document.getElementById('qr-canvas').innerHTML = '';
     new QRCode(document.getElementById('qr-canvas'),{text:upiUrl,width:160,height:160,colorDark:'#0a1628',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
@@ -904,7 +944,7 @@ function buildSuccess(saved){
   tbody.innerHTML = '';
   regs.forEach((r, i) => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${i+1}</td><td>${r.fn} ${r.ln}</td><td>${r.age}</td><td>${r.club||'—'}</td>
+    tr.innerHTML = `<td>${i+1}</td><td>${r.fn}</td><td>${r.age}</td><td>${r.club||'—'}</td>
       <td>${(r.events||[]).map(e=>`<span class="ev-pill">${e}</span>`).join('')}</td>`;
     tbody.appendChild(tr);
   });
@@ -912,26 +952,24 @@ function buildSuccess(saved){
   document.getElementById('dn-cnt').textContent = numC;
   document.getElementById('dn-fee').textContent = fmt(feePC * numC);
   document.getElementById('dn-utr').textContent = utrVal;
-  // document.getElementById('dn-saved').textContent = saved ? '✓ Yes' : '— Not configured';
-  // document.getElementById('dn-saved').style.color = saved ? 'var(--teal)' : 'var(--light)';
 }
 
 function dlExcel(){
   const wb = XLSX.utils.book_new();
   const hdrs = ['#','Swimmers Name','DOB','Category','Gender','Club/School',
     "Father's Name","Father's Mobile","Mother's Name","Mother's Mobile",
-    'Event 1','Heat 1','Lane 1','Event 2','Heat 2','Lane 2','Event 3','Heat 3','Lane 3',
+    'Event 1','Heat 1','Event 2','Heat 2','Event 3','Heat 3',
     'Fee (₹)','UTR','Date','Time'];
   const rows = regs.map((r,i) => [
-    i+1, r.fn, r.ln, formatDate(r.dob), r.age, r.gender, r.club,
+    i+1, r.fn, formatDate(r.dob), r.age, r.gender, r.club,
     r.faName, r.faMob, r.maName, r.maMob,
-    r.events?.[0]||'', r.eventDetails?.[0]?.heat||'', r.eventDetails?.[0]?.lane||'',
-    r.events?.[1]||'', r.eventDetails?.[1]?.heat||'', r.eventDetails?.[1]?.lane||'',
-    r.events?.[2]||'', r.eventDetails?.[2]?.heat||'', r.eventDetails?.[2]?.lane||'',
+    r.events?.[0]||'', r.eventDetails?.[0]?.heat||'',
+    r.events?.[1]||'', r.eventDetails?.[1]?.heat||'',
+    r.events?.[2]||'', r.eventDetails?.[2]?.heat||'',
     feePC, utrVal, new Date().toLocaleDateString('en-IN'), new Date().toLocaleTimeString('en-IN')
   ]);
   const ws = XLSX.utils.aoa_to_sheet([hdrs,...rows]);
-  ws['!cols'] = [4,14,14,12,10,8,16,16,13,16,13,20,8,10,20,8,10,20,8,10,10,20,12,12].map(w=>({wch:w}));
+  ws['!cols'] = [4,14,12,12,10,8,16,16,13,16,20,8,20,8,20,8,10,20,12,12].map(w=>({wch:w}));
   const sum = [['Swimming Registration Summary'],[],
     ['Club',CFG.clubName],['Total Children',regs.length],
     ['Fee Per Child',feePC],['Total Fee',feePC*regs.length],
